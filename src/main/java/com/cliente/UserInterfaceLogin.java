@@ -141,7 +141,7 @@ public class UserInterfaceLogin {
                         return;
                     }
                 }
-                cadastroData.put("action", "cadastro-usuario");
+                cadastroData.put("action", action);
                 cadastroData.set("data", data);
 
                 try {
