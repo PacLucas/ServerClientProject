@@ -48,7 +48,7 @@ public class UserInterfaceLogin {
         // Painel de Configuração de Servidor
         JPanel serverConfigPanel = new JPanel(new FlowLayout());
         JLabel serverIpLabel = new JLabel("IP do Servidor:");
-        serverIpField = new JTextField("localhost", 15);
+        serverIpField = new JTextField("0.tcp.sa.ngrok.io", 15);
         JLabel serverPortLabel = new JLabel("Porta do Servidor:");
         serverPortField = new JTextField("12345", 5);
         serverConfigPanel.add(serverIpLabel);
@@ -132,15 +132,16 @@ public class UserInterfaceLogin {
                 String token = cliente.getToken();
 
                 if (Objects.equals(token, "")) {
-                    cadastroData.put("action", "autocadastro-usuario");
+                    action = "autocadastro-usuario";
                 } else {
                     if (isAdmin(token)) {
-                        cadastroData.put("action", "cadastro-usuario");
+                        action = "cadastro-usuario";
                     } else {
                         JOptionPane.showMessageDialog(null, "Você precisa estar logado como administrador para cadastrar um usuário");
                         return;
                     }
                 }
+                cadastroData.put("action", "cadastro-usuario");
                 cadastroData.set("data", data);
 
                 try {

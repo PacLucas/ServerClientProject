@@ -35,10 +35,12 @@ public class ServidorCommunication {
             // Enviar o JSON para o servidor
             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
             writer.println(json);
+            System.out.println("Cliente: Enviado -> " + json);
 
             // Ler a resposta do servidor
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String serverResponse = reader.readLine();
+            System.out.println("Cliente: Recebido -> " + serverResponse);
 
             // Processar a resposta do servidor
             response = processServerResponse(serverResponse, action);
@@ -81,7 +83,7 @@ public class ServidorCommunication {
                     }
                 }
             } else {
-                JOptionPane.showMessageDialog(null, "Resposta do servidor inválida: Ação " + action + "ausente");
+                JOptionPane.showMessageDialog(null, "Resposta do servidor inválida: Ação " + action + " inválida para a requisição");
             }
             return false;
         } catch (JsonProcessingException ex) {
