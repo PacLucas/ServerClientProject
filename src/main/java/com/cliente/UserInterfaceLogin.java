@@ -34,7 +34,7 @@ public class UserInterfaceLogin {
     public Cliente cliente;
     private String[] tipos = { "user", "admin" };
 
-    private static final String secretKey = "TOKEN_SECRET_KEY";
+    private static final String secretKey = "AoT3QFTTEkj16rCby/TPVBWvfSQHL3GeEz3zVwEd6LDrQDT97sgDY8HJyxgnH79jupBWFOQ1+7fRPBLZfpuA2lwwHqTgk+NJcWQnDpHn31CVm63Or5c5gb4H7/eSIdd+7hf3v+0a5qVsnyxkHbcxXquqk9ezxrUe93cFppxH4/kF/kGBBamm3kuUVbdBUY39c4U3NRkzSO+XdGs69ssK5SPzshn01axCJoNXqqj+ytebuMwF8oI9+ZDqj/XsQ1CLnChbsL+HCl68ioTeoYU9PLrO4on+rNHGPI0Cx6HrVse7M3WQBPGzOd1TvRh9eWJrvQrP/hm6kOR7KrWKuyJzrQh7OoDxrweXFH8toXeQRD8=";
 
 
     public UserInterfaceLogin(Cliente cliente) {
@@ -50,7 +50,7 @@ public class UserInterfaceLogin {
         JLabel serverIpLabel = new JLabel("IP do Servidor:");
         serverIpField = new JTextField("0.tcp.sa.ngrok.io", 15);
         JLabel serverPortLabel = new JLabel("Porta do Servidor:");
-        serverPortField = new JTextField("12345", 5);
+        serverPortField = new JTextField("14808", 5);
         serverConfigPanel.add(serverIpLabel);
         serverConfigPanel.add(serverIpField);
         serverConfigPanel.add(serverPortLabel);
@@ -136,6 +136,8 @@ public class UserInterfaceLogin {
                 } else {
                     if (isAdmin(token)) {
                         action = "cadastro-usuario";
+                        data.put("tipo", tipo);
+                        data.put("token", cliente.getToken());
                     } else {
                         JOptionPane.showMessageDialog(null, "Você precisa estar logado como administrador para cadastrar um usuário");
                         return;
