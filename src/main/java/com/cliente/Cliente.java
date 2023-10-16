@@ -25,7 +25,7 @@ public class Cliente {
         if (servidorCommunication.sendRequest(json, action)) {
             switch (action) {
                 case "login":
-
+                    JOptionPane.showMessageDialog(null, "Login realizado com sucesso!");
                     break;
 
                 case "logout":
@@ -36,6 +36,7 @@ public class Cliente {
                     break;
 
                 case "autocadastro-usuario":
+                    JOptionPane.showMessageDialog(null, "Cadastro realizado com sucesso!");
                     userInterfaceLogin.backButton.doClick();
                     break;
 
