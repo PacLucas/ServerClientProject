@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.Socket;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,13 +20,13 @@ public class ClientHandler implements Runnable {
     private static final String secretKey = "AoT3QFTTEkj16rCby/TPVBWvfSQHL3GeEz3zVwEd6LDrQDT97sgDY8HJyxgnH79jupBWFOQ1+7fRPBLZfpuA2lwwHqTgk+NJcWQnDpHn31CVm63Or5c5gb4H7/eSIdd+7hf3v+0a5qVsnyxkHbcxXquqk9ezxrUe93cFppxH4/kF/kGBBamm3kuUVbdBUY39c4U3NRkzSO+XdGs69ssK5SPzshn01axCJoNXqqj+ytebuMwF8oI9+ZDqj/XsQ1CLnChbsL+HCl68ioTeoYU9PLrO4on+rNHGPI0Cx6HrVse7M3WQBPGzOd1TvRh9eWJrvQrP/hm6kOR7KrWKuyJzrQh7OoDxrweXFH8toXeQRD8=";
     private final Server server;
     private boolean shouldRun = true;
-    private DatabaseManager dbManager;
+    private static DatabaseManager dbManager = null;
 
 
     public ClientHandler(Socket clientSocket, Server server) {
         this.clientSocket = clientSocket;
         this.server = server;
-        this.dbManager = new DatabaseManager(this.server.getConnection());
+        dbManager = new DatabaseManager(this.server.getConnection());
     }
 
     @Override
@@ -85,6 +86,18 @@ public class ClientHandler implements Runnable {
                             message = "Credenciais inválidas. Tente novamente.";
                         }
 
+                        break;
+
+                    case "logout":
+                        String tokenLogout = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenLogout, "") && isValidUser(tokenLogout)) {
+                            error = false;
+                            message = "Usuário deslogado com sucesso!";
+                            break;
+                        }
+
+                        message = "Usuário não está logado.";
                         break;
 
                     case "cadastro-usuario":
@@ -149,6 +162,13 @@ public class ClientHandler implements Runnable {
         Jws<Claims> parsedToken = parseToken(token);
 
         return parsedToken.getBody().get("admin", Boolean.class);
+    }
+
+    public static boolean isValidUser(String token) {
+        Jws<Claims> parsedToken = parseToken(token);
+        String userId = parsedToken.getBody().get("user_id", String.class);
+
+        return dbManager.verificarUsuarioValido(userId);
     }
 
     private void sendResponse(PrintWriter writer, boolean error, String message, String action, ObjectNode data) {

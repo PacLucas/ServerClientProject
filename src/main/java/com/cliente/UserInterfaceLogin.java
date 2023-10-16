@@ -22,14 +22,14 @@ public class UserInterfaceLogin {
     private JTextField serverPortField;
     private JTextField emailField;
     private JPasswordField passwordField;
-    private JButton loginButton;
+    JButton loginButton;
     private JButton cadastroButton;
     public JButton backButton;
     private JTextField nameField;
     private JLabel nameLabel;
     private JLabel tipoComboBoxLabel;
     private JPanel loginPanel;
-    private JButton logoutButton; // Botão de logout
+    JButton logoutButton;
     private JPanel buttonPanel;
     public Cliente cliente;
     private String[] tipos = { "user", "admin" };
@@ -48,9 +48,9 @@ public class UserInterfaceLogin {
         // Painel de Configuração de Servidor
         JPanel serverConfigPanel = new JPanel(new FlowLayout());
         JLabel serverIpLabel = new JLabel("IP do Servidor:");
-        serverIpField = new JTextField("0.tcp.sa.ngrok.io", 15);
+        serverIpField = new JTextField("localhost", 15);
         JLabel serverPortLabel = new JLabel("Porta do Servidor:");
-        serverPortField = new JTextField("14808", 5);
+        serverPortField = new JTextField("12345", 5);
         serverConfigPanel.add(serverIpLabel);
         serverConfigPanel.add(serverIpField);
         serverConfigPanel.add(serverPortLabel);
@@ -78,6 +78,7 @@ public class UserInterfaceLogin {
         backButton = new JButton("Voltar");
         backButton.setFont(new Font("Arial", Font.BOLD, 14));
         logoutButton = new JButton("Logout");
+        logoutButton.setFont(new Font("Arial", Font.BOLD, 14));
 
         // Adicione espaçamento entre os componentes
         emailLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
@@ -233,11 +234,21 @@ public class UserInterfaceLogin {
         logoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Limpe o token da sessão do cliente
-                cliente.removeToken();
-                // Oculte o botão de logout e mostre o botão de login
-                logoutButton.setVisible(false);
-                loginButton.setVisible(true);
+                String action = "logout";
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode requestData = mapper.createObjectNode();
+                ObjectNode data = mapper.createObjectNode();
+                data.put("token", cliente.getToken());
+
+                requestData.put("action", action);
+                requestData.set("data", data);
+                try {
+                    String jsonString = mapper.writeValueAsString(requestData);
+
+                    cliente.sendRequestToServer(jsonString, action);
+                } catch (JsonProcessingException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
     }

@@ -28,6 +28,13 @@ public class Cliente {
 
                     break;
 
+                case "logout":
+                    this.removeToken();
+                    userInterfaceLogin.logoutButton.setVisible(false);
+                    userInterfaceLogin.loginButton.setVisible(true);
+                    JOptionPane.showMessageDialog(null, "Logout realizado com sucesso!");
+                    break;
+
                 case "autocadastro-usuario":
                     userInterfaceLogin.backButton.doClick();
                     break;

@@ -67,4 +67,21 @@ public class DatabaseManager {
         return null;
     }
 
+    public Boolean verificarUsuarioValido(String userId) {
+        String sql = "SELECT * FROM usuarios WHERE id = ?";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, userId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
 }
