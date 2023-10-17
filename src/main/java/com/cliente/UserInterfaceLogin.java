@@ -120,7 +120,6 @@ public class UserInterfaceLogin {
                 String senha = new String(passwordField.getPassword());
                 String tipo =  (String) tipoComboBox.getSelectedItem();
 
-                // Crie um objeto JSON usando o Jackson Databind
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode cadastroData = mapper.createObjectNode();
 
@@ -148,11 +147,8 @@ public class UserInterfaceLogin {
                 cadastroData.set("data", data);
 
                 try {
-                    // Converta o objeto JSON em uma string
                     String jsonString = mapper.writeValueAsString(cadastroData);
 
-                    // Agora você pode enviar a string JSON para o servidor
-                    // Implemente a lógica de comunicação com o servidor aqui
                     cliente.sendRequestToServer(jsonString, action);
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -163,13 +159,12 @@ public class UserInterfaceLogin {
         cadastroButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Exibe os campos de nome, email e senha para cadastro
                 emailField.setText("teste@teste.com");
                 passwordField.setText("senha1234");
                 nameField.setVisible(true);
                 nameLabel.setVisible(true);
-                loginButton.setVisible(false); // Oculta o botão de login
-                backButton.setVisible(true); // Torna visível o botão de voltar
+                loginButton.setVisible(false);
+                backButton.setVisible(true);
                 tipoComboBoxLabel.setVisible(true);
                 tipoComboBox.setVisible(true);
 
@@ -181,7 +176,6 @@ public class UserInterfaceLogin {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Retorna ao modo de login
                 emailField.setText("teste@teste.com");
                 passwordField.setText("senha1234");
                 nameField.setVisible(false);
@@ -192,7 +186,6 @@ public class UserInterfaceLogin {
                 tipoComboBox.setVisible(false);
                 loginButton.setText("Login");
 
-                // Remove o ActionListener do botão de cadastro
                 cadastroButton.removeActionListener(cadastroActionListener);
             }
         });
@@ -202,11 +195,9 @@ public class UserInterfaceLogin {
             public void actionPerformed(ActionEvent e) {
                 String action = "login";
 
-                // Coletar os dados do formulário
                 String email = emailField.getText();
                 String senha = new String(passwordField.getPassword());
 
-                // Criar um objeto JSON usando o Jackson Databind
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode requestData = mapper.createObjectNode();
 
@@ -220,10 +211,8 @@ public class UserInterfaceLogin {
                 logoutButton.setVisible(true);
 
                 try {
-                    // Converter o objeto JSON em uma string
                     String jsonString = mapper.writeValueAsString(requestData);
 
-                    // Enviar o JSON para o servidor
                     cliente.sendRequestToServer(jsonString, action);
                 } catch (JsonProcessingException ex) {
                     ex.printStackTrace();
@@ -279,7 +268,7 @@ public class UserInterfaceLogin {
         try {
             return Integer.parseInt(serverPortField.getText());
         } catch (NumberFormatException e) {
-            return -1; // Retorna -1 se a porta não for um número válido
+            return -1;
         }
     }
 

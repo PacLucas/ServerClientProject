@@ -39,17 +39,14 @@ public class ServerThread extends Thread {
 
     public void stopServer() {
         try {
-            // Implemente a lógica para encerrar o servidor aqui
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
             }
-            // Encerre todas as conexões e threads ativas
             for (ClientHandler client : clients) {
                 client.stop();
             }
             clients.clear();
             server.connectionListArea.append("Servidor encerrado.\n");
-            // Outras ações de encerramento, se necessário
         } catch (IOException e) {
             e.printStackTrace();
         }

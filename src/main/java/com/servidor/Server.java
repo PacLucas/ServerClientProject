@@ -69,11 +69,6 @@ public class Server {
 
         connection = DatabaseConnection.connect();
         DatabaseSetup.createTable(connection);
-
-        this.users = new HashMap<>();
-        String adminUsername = "admin";
-        String adminPassword = "admin"; // Não é seguro, apenas para fins de exemplo
-        users.put(adminUsername, adminPassword);
     }
 
     public void start() {

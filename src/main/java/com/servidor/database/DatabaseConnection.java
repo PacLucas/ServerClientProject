@@ -7,7 +7,7 @@ import java.sql.Statement;
 
 
 public class DatabaseConnection {
-    private static final String DATABASE_URL = "jdbc:sqlite:ProjectDatabase.db"; // Substitua "minhaBase.db" pelo nome do seu arquivo de banco de dados.
+    private static final String DATABASE_URL = "jdbc:sqlite:ProjectDatabase.db";
 
     public static Connection connect() {
         try {

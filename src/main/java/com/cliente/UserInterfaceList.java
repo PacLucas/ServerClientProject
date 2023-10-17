@@ -18,11 +18,9 @@ public class UserInterfaceList {
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 
-        // Lista de Usuários
         userList = new JList<>();
         JScrollPane userListScrollPane = new JScrollPane(userList);
 
-        // Botões de Edição e Exclusão
         JPanel buttonPanel = new JPanel();
         editButton = new JButton("Editar Usuário");
         deleteButton = new JButton("Excluir Usuário");

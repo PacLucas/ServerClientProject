@@ -68,7 +68,6 @@ public class ClientHandler implements Runnable {
 
                 switch (action) {
                     case "login":
-                        // Ação de login
                         String password = data.get("senha").asText();
                         String loginEmail = data.get("email").asText();
                         ResultSet user = isValidLogin(loginEmail, password);
@@ -77,10 +76,8 @@ public class ClientHandler implements Runnable {
                             message = "Logado com sucesso";
                             error = false;
 
-                            // Gere o token JWT usando o ID do usuário (neste exemplo, use "1")
                             String token = generateJWT(user.getString("id"), user.getString("tipo").equals("admin"));
 
-                            // Incluir o token na resposta
                             responseData = mapper.createObjectNode().put("token", token);
                         } else {
                             message = "Credenciais inválidas. Tente novamente.";
@@ -120,13 +117,11 @@ public class ClientHandler implements Runnable {
                             }
                         }
 
-                        // Validar o email
                         if (!isEmailValid(cadastroEmail)) {
                             message = "Email inválido.";
                         } else if (dbManager.emailJaExiste(cadastroEmail)) {
                             message = "Email já cadastrado.";
                         } else {
-                            // Inserir os dados do novo usuário na base de dados
                             if (dbManager.inserirUsuario(nome, cadastroEmail, senha, tipo)) {
                                 error = false;
                                 message = "Usuário cadastrado com sucesso!";
@@ -136,11 +131,9 @@ public class ClientHandler implements Runnable {
                         }
                         break;
 
-                    // Validar o email
 
 
                     default:
-                        // Ação desconhecida
                         message = "Ação '" + action + "' desconhecida";
                         sendResponse(writer, error, message, action, null);
                         break;

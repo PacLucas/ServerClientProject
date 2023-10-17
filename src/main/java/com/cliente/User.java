@@ -13,7 +13,6 @@ public class User {
         this.userType = userType;
     }
 
-    // Getters e Setters para os campos do usuário
     public String getUsername() {
         return username;
     }

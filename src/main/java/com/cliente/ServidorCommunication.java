@@ -29,23 +29,18 @@ public class ServidorCommunication {
         try {
             Socket socket = new Socket(serverIP, serverPort);
 
-            // Configure um tempo limite para a resposta do servidor (5 segundos)
             socket.setSoTimeout(5000);
 
-            // Enviar o JSON para o servidor
             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
             writer.println(json);
             System.out.println("Cliente: Enviado -> " + json);
 
-            // Ler a resposta do servidor
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String serverResponse = reader.readLine();
             System.out.println("Cliente: Recebido -> " + serverResponse);
 
-            // Processar a resposta do servidor
             response = processServerResponse(serverResponse, action);
 
-            // Fechar a conexão com o servidor
             socket.close();
         } catch (SocketTimeoutException ste) {
             response = false;
@@ -61,7 +56,6 @@ public class ServidorCommunication {
 
     private boolean processServerResponse(String serverResponse, String action) {
         try {
-            // Processar a resposta do servidor
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode responseJson = mapper.readValue(serverResponse, ObjectNode.class);
 

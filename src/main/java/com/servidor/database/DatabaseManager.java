@@ -38,7 +38,7 @@ public class DatabaseManager {
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 int count = resultSet.getInt(1);
-                return count > 0; // Se count for maior que 0, o email já existe
+                return count > 0;
             }
         } catch (SQLException e) {
             e.printStackTrace();
