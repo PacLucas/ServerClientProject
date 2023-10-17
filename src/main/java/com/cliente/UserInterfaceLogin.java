@@ -59,9 +59,9 @@ public class UserInterfaceLogin {
         // Painel de Login
         loginPanel = new JPanel(new GridLayout(5, 2, 10, 10));
         JLabel emailLabel = new JLabel("Email:");
-        emailField = new JTextField("teste@teste.com", 15);
+        emailField = new JTextField("admin@admin.com", 15);
         JLabel passwordLabel = new JLabel("Senha:");
-        passwordField = new JPasswordField("senha1234", 15);
+        passwordField = new JPasswordField("admin1234", 15);
         loginButton = new JButton("Login");
         cadastroButton = new JButton("Cadastrar");
         nameField = new JTextField("Seu Nome", 15);
@@ -203,7 +203,7 @@ public class UserInterfaceLogin {
 
                 ObjectNode data = mapper.createObjectNode();
                 data.put("email", email);
-                data.put("senha", passwordMD5(senha));
+                data.put("password", passwordMD5(senha));
 
                 requestData.put("action", action);
                 requestData.set("data", data);

@@ -68,7 +68,7 @@ public class ClientHandler implements Runnable {
 
                 switch (action) {
                     case "login":
-                        String password = data.get("senha").asText();
+                        String password = data.get("password").asText();
                         String loginEmail = data.get("email").asText();
                         ResultSet user = isValidLogin(loginEmail, password);
 
