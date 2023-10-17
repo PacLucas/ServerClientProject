@@ -1,6 +1,7 @@
 package com.servidor;
 
 import com.servidor.database.DatabaseConnection;
+import com.servidor.database.DatabaseManager;
 import com.servidor.database.DatabaseSetup;
 
 import javax.swing.*;
@@ -69,6 +70,12 @@ public class Server {
 
         connection = DatabaseConnection.connect();
         DatabaseSetup.createTable(connection);
+
+        // Cadastro de admin padrao apenas para testes
+        DatabaseManager dbManager = new DatabaseManager(connection);
+        if (!dbManager.emailJaExiste("admin@admin.com")) {
+            dbManager.inserirUsuario("Admin", "admin@admin.com","$2a$10$p/h5IHl584g1FDOizSXSPen2DNAX9ACn1966XpgvcRqDeoKjvwKDy", "admin"); // Senha: admin1234
+        }
     }
 
     public void start() {

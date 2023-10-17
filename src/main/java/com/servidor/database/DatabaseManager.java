@@ -13,7 +13,7 @@ public class DatabaseManager {
         DatabaseManager.connection = connection;
     }
 
-    public boolean inserirUsuario(String nome, String email, String senha, String tipo) {
+    public static boolean inserirUsuario(String nome, String email, String senha, String tipo) {
         String sql = "INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -30,7 +30,7 @@ public class DatabaseManager {
         }
     }
 
-    public boolean emailJaExiste(String email) {
+    public static boolean emailJaExiste(String email) {
         String sql = "SELECT COUNT(*) FROM usuarios WHERE email = ?";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
