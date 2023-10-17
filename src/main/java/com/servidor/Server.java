@@ -74,7 +74,7 @@ public class Server {
         // Cadastro de admin padrao apenas para testes
         DatabaseManager dbManager = new DatabaseManager(connection);
         if (!dbManager.emailJaExiste("admin@admin.com")) {
-            dbManager.inserirUsuario("Admin", "admin@admin.com","$2a$10$p/h5IHl584g1FDOizSXSPen2DNAX9ACn1966XpgvcRqDeoKjvwKDy", "admin"); // Senha: admin1234
+            dbManager.inserirUsuario("Admin", "admin@admin.com","C93CCD78B2076528346216B3B2F701E6", "admin"); // Senha: admin1234
         }
     }
 
