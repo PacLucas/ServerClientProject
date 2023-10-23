@@ -136,7 +136,7 @@ public class UserInterfaceLogin {
                 } else {
                     if (isAdmin(token)) {
                         action = "cadastro-usuario";
-                        data.put("tipo", tipo);
+                        data.put("type", tipo);
                         data.put("token", cliente.getToken());
                     } else {
                         JOptionPane.showMessageDialog(null, "Você precisa estar logado como administrador para cadastrar um usuário");
