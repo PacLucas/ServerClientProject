@@ -17,42 +17,45 @@ public class ServidorCommunication {
     private String serverIP;
     private int serverPort;
     private Cliente cliente;
+    private Socket socket;
+    private PrintWriter writer;
+    private BufferedReader reader;
 
     public ServidorCommunication(Cliente cliente, String serverIP, int serverPort) {
         this.cliente = cliente;
         this.serverIP = serverIP;
         this.serverPort = serverPort;
+
+        try {
+            socket = new Socket(serverIP, serverPort);
+            writer = new PrintWriter(socket.getOutputStream(), true);
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erro: Não foi possível conectar ao servidor");
+        }
     }
 
     public boolean sendRequest(String json, String action) {
         boolean response = false;
         try {
-            Socket socket = new Socket(serverIP, serverPort);
-
-            socket.setSoTimeout(5000);
-
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
             writer.println(json);
             System.out.println("Cliente: Enviado -> " + json);
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String serverResponse = reader.readLine();
             System.out.println("Cliente: Recebido -> " + serverResponse);
 
             response = processServerResponse(serverResponse, action);
-
-            socket.close();
         } catch (SocketTimeoutException ste) {
             response = false;
             JOptionPane.showMessageDialog(null, "Erro: Server timeout");
         } catch (IOException e) {
             response = false;
-            JOptionPane.showMessageDialog(null, "Erro: Não foi possivel conectar ao servidor");
+            JOptionPane.showMessageDialog(null, "Erro: Não foi possível conectar ao servidor");
             e.printStackTrace();
         }
         return response;
     }
-
 
     private boolean processServerResponse(String serverResponse, String action) {
         try {
@@ -68,7 +71,6 @@ public class ServidorCommunication {
                             JOptionPane.showMessageDialog(null, "Resposta do servidor inválida: Token ausente.");
                         }
                     }
-
                     return true;
                 } else {
                     if (responseJson.has("message")) {
@@ -85,5 +87,19 @@ public class ServidorCommunication {
             ex.printStackTrace();
         }
         return false;
+    }
+
+    public boolean isConnected() {
+        return socket != null && !socket.isClosed();
+    }
+
+    public void closeConnection() {
+        try {
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -125,9 +125,9 @@ public class UserInterfaceLogin {
 
 
                 ObjectNode data = mapper.createObjectNode();
-                data.put("nome", nome);
+                data.put("name", nome);
                 data.put("email", email);
-                data.put("senha", passwordMD5(senha));
+                data.put("password", passwordMD5(senha));
 
                 String token = cliente.getToken();
 

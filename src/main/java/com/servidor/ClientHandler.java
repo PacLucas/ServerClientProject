@@ -21,6 +21,8 @@ public class ClientHandler implements Runnable {
     private final Server server;
     private boolean shouldRun = true;
     private static DatabaseManager dbManager = null;
+    private boolean logoutSuccessful = false; // Variável de controle
+
 
 
     public ClientHandler(Socket clientSocket, Server server) {
@@ -45,11 +47,7 @@ public class ClientHandler implements Runnable {
             e.printStackTrace();
         } finally {
             server.removeClient(this);
-            try {
-                clientSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            server.connectionListArea.append("Conexão finalizada: " + clientSocket.getInetAddress().getHostAddress() + "\n");
         }
     }
 
@@ -91,18 +89,18 @@ public class ClientHandler implements Runnable {
                         if (!Objects.equals(tokenLogout, "") && isValidUser(tokenLogout)) {
                             error = false;
                             message = "Usuário deslogado com sucesso!";
-                            break;
+                            logoutSuccessful = true;
+                        } else {
+                            message = "Usuário não está logado.";
                         }
-
-                        message = "Usuário não está logado.";
                         break;
 
                     case "cadastro-usuario":
                     case "autocadastro-usuario":
                         String cadastroEmail = data.get("email").asText();
-                        String senha = data.get("senha").asText();
-                        String nome = data.get("nome").asText();
-                        String tipo = (data.has("tipo") && !data.get("tipo").isNull()) ? data.get("tipo").asText() : "user";
+                        String senha = data.get("password").asText();
+                        String nome = data.get("name").asText();
+                        String tipo = (data.has("type") && !data.get("type").isNull()) ? data.get("type").asText() : "user";
                         String token = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
 
                         if (action == "cadastro-usuario" || tipo == "admin" || data.has("token")) {
@@ -175,8 +173,14 @@ public class ClientHandler implements Runnable {
             responseJson.set("data", data);
         }
 
-        writer.println(responseJson.toString());
         System.out.println("Servidor: Enviado -> " + responseJson.toString());
+        try {
+            writer.println(responseJson.toString());
+        } catch (Exception e) {
+            System.out.println("Servidor: ERRO AO ENVIAR RESPONSE");
+            e.printStackTrace();
+        }
+
     }
 
     public void stop() {

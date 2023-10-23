@@ -17,9 +17,16 @@ public class Cliente {
         userInterfaceLogin.show();
     }
 
+    private ServidorCommunication getServidorCommunication() {
+        if (servidorCommunication == null || !servidorCommunication.isConnected()) {
+            servidorCommunication = new ServidorCommunication(this, getServerIP(), getServerPort());
+        }
+        return servidorCommunication;
+    }
+
     public void sendRequestToServer(String json, String action) {
-        servidorCommunication = new ServidorCommunication(this, getServerIP(), getServerPort());
-        if (servidorCommunication.sendRequest(json, action)) {
+        ServidorCommunication communication = getServidorCommunication();
+        if (communication.sendRequest(json, action)) {
             switch (action) {
                 case "login":
                     JOptionPane.showMessageDialog(null, "Login realizado com sucesso!");
@@ -29,6 +36,7 @@ public class Cliente {
                     this.removeToken();
                     userInterfaceLogin.logoutButton.setVisible(false);
                     userInterfaceLogin.loginButton.setVisible(true);
+                    communication.closeConnection();
                     JOptionPane.showMessageDialog(null, "Logout realizado com sucesso!");
                     break;
 
