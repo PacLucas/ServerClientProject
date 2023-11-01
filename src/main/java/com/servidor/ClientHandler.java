@@ -131,6 +131,27 @@ public class ClientHandler implements Runnable {
                             }
                         }
                         break;
+                    case "edicao-usuario":
+                    case "autoeditcao-usuario":
+                        String tokenEditarUsuario = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+                        String edicaoEmail = data.get("email").asText();
+                        String edicaoSenha = data.get("password").asText();
+                        String edicaoNome = data.get("name").asText();
+                        int edicaoId = data.get("user_id").asInt();
+                        String edicaoTipo = (data.has("type") && !data.get("type").isNull()) ? data.get("type").asText() : "user";
+
+                        if (!Objects.equals(tokenEditarUsuario, "") && isValidUser(tokenEditarUsuario)) {
+                            boolean result = dbManager.editarUsuario(edicaoId, edicaoNome, edicaoEmail, edicaoTipo, edicaoSenha);
+
+                            if(result) {
+                                message = "Usuario editado com sucesso";
+                            } else {
+                                message = "Nenhum usuário encontrado.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
 
                     case "listar-usuarios":
                         String tokenListarUsuarios = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
@@ -150,6 +171,23 @@ public class ClientHandler implements Runnable {
                                     userNode.put("email", user.getEmail());
                                     usersArray.add(userNode);
                                 }
+                            } else {
+                                message = "Nenhum usuário encontrado.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
+                    case "excluir-proprio-usuario":
+                    case "excluir-usuario":
+                        String tokenExcluirUsuario = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenExcluirUsuario, "") && isValidUser(tokenExcluirUsuario)) {
+                            boolean result = dbManager.excluirUsuario(data.get("user_id").asInt());
+
+                            if(result) {
+                                message = "Usuario excluido com sucesso";
                             } else {
                                 message = "Nenhum usuário encontrado.";
                             }

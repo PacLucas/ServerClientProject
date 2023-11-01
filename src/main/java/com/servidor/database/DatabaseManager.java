@@ -109,4 +109,48 @@ public class DatabaseManager {
 
         return users;
     }
+
+    public static boolean editarUsuario(int userId, String novoNome, String novoEmail, String novoTipo, String novaSenha) {
+        String sql;
+        if (novaSenha != null && !novaSenha.isEmpty()) {
+            sql = "UPDATE usuarios SET nome = ?, email = ?, tipo = ?, senha = ? WHERE id = ?";
+        } else {
+            sql = "UPDATE usuarios SET nome = ?, email = ?, tipo = ? WHERE id = ?";
+        }
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, novoNome);
+            preparedStatement.setString(2, novoEmail);
+            preparedStatement.setString(3, novoTipo);
+
+            if (novaSenha != null && !novaSenha.isEmpty()) {
+                String hashedPassword = BCrypt.hashpw(novaSenha, BCrypt.gensalt());
+                preparedStatement.setString(4, hashedPassword);
+                preparedStatement.setInt(5, userId);
+            } else {
+                preparedStatement.setInt(4, userId);
+            }
+
+            int rowsAffected = preparedStatement.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public static boolean excluirUsuario(int userId) {
+        String sql = "DELETE FROM usuarios WHERE id = ?";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, userId);
+            int rowsAffected = preparedStatement.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

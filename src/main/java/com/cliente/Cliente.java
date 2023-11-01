@@ -35,6 +35,7 @@ public class Cliente {
                     JOptionPane.showMessageDialog(null, "Login realizado com sucesso!");
                     userInterfaceLogin.listarUsuariosButton.setVisible(true);
                     userInterfaceLogin.editarUsuarioButton.setVisible(true);
+                    userInterfaceLogin.excluirUsuarioButton.setVisible(true);
                     break;
 
                 case "logout":

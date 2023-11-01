@@ -27,6 +27,7 @@ public class UserInterfaceLogin {
     private JButton cadastroButton;
     public JButton backButton;
     private JTextField nameField;
+    private JTextField idField;
     private JLabel nameLabel;
     private JLabel tipoComboBoxLabel;
     private JPanel loginPanel;
@@ -36,6 +37,7 @@ public class UserInterfaceLogin {
     private String[] tipos = { "user", "admin" };
     JButton listarUsuariosButton;
     JButton editarUsuarioButton;
+    JButton excluirUsuarioButton;
     private JList<String> userList;
 
     private static final String secretKey = "AoT3QFTTEkj16rCby/TPVBWvfSQHL3GeEz3zVwEd6LDrQDT97sgDY8HJyxgnH79jupBWFOQ1+7fRPBLZfpuA2lwwHqTgk+NJcWQnDpHn31CVm63Or5c5gb4H7/eSIdd+7hf3v+0a5qVsnyxkHbcxXquqk9ezxrUe93cFppxH4/kF/kGBBamm3kuUVbdBUY39c4U3NRkzSO+XdGs69ssK5SPzshn01axCJoNXqqj+ytebuMwF8oI9+ZDqj/XsQ1CLnChbsL+HCl68ioTeoYU9PLrO4on+rNHGPI0Cx6HrVse7M3WQBPGzOd1TvRh9eWJrvQrP/hm6kOR7KrWKuyJzrQh7OoDxrweXFH8toXeQRD8=";
@@ -69,6 +71,7 @@ public class UserInterfaceLogin {
         loginButton = new JButton("Login");
         cadastroButton = new JButton("Cadastrar");
         nameField = new JTextField("Seu Nome", 15);
+        idField = new JTextField("ID Usuario", 4);
         nameLabel = new JLabel("Nome:");
         tipoComboBoxLabel = new JLabel("Tipo de Usuário:");
         JComboBox<String> tipoComboBox = new JComboBox<>(tipos);
@@ -78,8 +81,11 @@ public class UserInterfaceLogin {
         listarUsuariosButton.setFont(new Font("Arial", Font.BOLD, 14));
         listarUsuariosButton.setVisible(false);
         editarUsuarioButton = new JButton("Editar Usuário");
+        excluirUsuarioButton = new JButton("Excluir Usuário");
         editarUsuarioButton.setFont(new Font("Arial", Font.BOLD, 14));
+        excluirUsuarioButton.setFont(new Font("Arial", Font.BOLD, 14));
         editarUsuarioButton.setVisible(false);
+        excluirUsuarioButton.setVisible(false);
 
         DefaultListModel<String> userModel = new DefaultListModel<>();
         userList = new JList<>(userModel);
@@ -88,6 +94,7 @@ public class UserInterfaceLogin {
         emailField.setFont(new Font("Arial", Font.PLAIN, 14));
         passwordField.setFont(new Font("Arial", Font.PLAIN, 14));
         nameField.setFont(new Font("Arial", Font.PLAIN, 14));
+        idField.setFont(new Font("Arial", Font.PLAIN, 14));
         loginButton.setFont(new Font("Arial", Font.BOLD, 14));
         cadastroButton.setFont(new Font("Arial", Font.BOLD, 14));
         backButton = new JButton("Voltar");
@@ -99,6 +106,7 @@ public class UserInterfaceLogin {
         emailLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
         passwordLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
         nameField.setVisible(false);
+        idField.setVisible(false);
         nameLabel.setVisible(false);
         tipoComboBoxLabel.setVisible(false);
         tipoComboBox.setVisible(false);
@@ -113,6 +121,7 @@ public class UserInterfaceLogin {
         loginPanel.add(nameField);
         loginPanel.add(tipoComboBoxLabel);
         loginPanel.add(tipoComboBox);
+        loginPanel.add(idField);
 
         buttonPanel = new JPanel(new FlowLayout());
         buttonPanel.add(loginButton);
@@ -121,6 +130,7 @@ public class UserInterfaceLogin {
         buttonPanel.add(logoutButton);
         buttonPanel.add(listarUsuariosButton);
         buttonPanel.add(editarUsuarioButton);
+        buttonPanel.add(excluirUsuarioButton);
 
         mainPanel.add(serverConfigPanel, BorderLayout.NORTH);
         mainPanel.add(loginPanel, BorderLayout.CENTER);
@@ -179,6 +189,7 @@ public class UserInterfaceLogin {
                 emailField.setText("teste@teste.com");
                 passwordField.setText("senha1234");
                 nameField.setVisible(true);
+                idField.setVisible(true);
                 nameLabel.setVisible(true);
                 loginButton.setVisible(false);
                 backButton.setVisible(true);
@@ -305,10 +316,40 @@ public class UserInterfaceLogin {
                     return;
                 }
                 if (isAdmin(token)) {
-                    action = "pedido-edicao-usuario";
+                    action = "edicao-usuario";
                 }
                 data.put("token", token);
-                data.put("user_id", getCurrentUserId(token));
+                data.put("user_id", idField.getText());
+
+                ObjectNode requestData = mapper.createObjectNode();
+                requestData.put("action", action);
+                requestData.set("data", data);
+                System.out.println(requestData);
+
+                try {
+                    String jsonString = mapper.writeValueAsString(requestData);
+                    cliente.sendRequestToServer(jsonString, action);
+                } catch (JsonProcessingException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        excluirUsuarioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String action = "excluir-usuario";
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode data = mapper.createObjectNode();
+                String token = cliente.getToken();
+                String userId = idField.getText();
+
+                if (Objects.equals(token, "")) {
+                    JOptionPane.showMessageDialog(null, "Você precisa estar logado para excluir usuário");
+                    return;
+                }
+                data.put("user_id", userId);
+                data.put("token", token);
 
                 ObjectNode requestData = mapper.createObjectNode();
                 requestData.put("action", action);
