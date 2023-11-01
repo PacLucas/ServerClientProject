@@ -71,6 +71,14 @@ public class ServidorCommunication {
                             JOptionPane.showMessageDialog(null, "Resposta do servidor inválida: Token ausente.");
                         }
                     }
+                    if (responseJson.get("action").asText().equals("listar-usuarios")) {
+                        if (responseJson.has("data") && responseJson.get("data").has("usuarios")) {
+                            this.cliente.updateUsersList(responseJson.get("data").get("usuarios"));
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Resposta do servidor inválida: Lista de usuários ausente.");
+                        }
+                    }
+
                     return true;
                 } else {
                     if (responseJson.has("message")) {

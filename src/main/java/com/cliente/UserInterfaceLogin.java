@@ -1,6 +1,7 @@
 package com.cliente;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.jsonwebtoken.Claims;
@@ -33,6 +34,9 @@ public class UserInterfaceLogin {
     private JPanel buttonPanel;
     public Cliente cliente;
     private String[] tipos = { "user", "admin" };
+    JButton listarUsuariosButton;
+    JButton editarUsuarioButton;
+    private JList<String> userList;
 
     private static final String secretKey = "AoT3QFTTEkj16rCby/TPVBWvfSQHL3GeEz3zVwEd6LDrQDT97sgDY8HJyxgnH79jupBWFOQ1+7fRPBLZfpuA2lwwHqTgk+NJcWQnDpHn31CVm63Or5c5gb4H7/eSIdd+7hf3v+0a5qVsnyxkHbcxXquqk9ezxrUe93cFppxH4/kF/kGBBamm3kuUVbdBUY39c4U3NRkzSO+XdGs69ssK5SPzshn01axCJoNXqqj+ytebuMwF8oI9+ZDqj/XsQ1CLnChbsL+HCl68ioTeoYU9PLrO4on+rNHGPI0Cx6HrVse7M3WQBPGzOd1TvRh9eWJrvQrP/hm6kOR7KrWKuyJzrQh7OoDxrweXFH8toXeQRD8=";
 
@@ -69,6 +73,17 @@ public class UserInterfaceLogin {
         tipoComboBoxLabel = new JLabel("Tipo de Usuário:");
         JComboBox<String> tipoComboBox = new JComboBox<>(tipos);
 
+        // Listagem Usuarios
+        listarUsuariosButton = new JButton("Listar Usuários");
+        listarUsuariosButton.setFont(new Font("Arial", Font.BOLD, 14));
+        listarUsuariosButton.setVisible(false);
+        editarUsuarioButton = new JButton("Editar Usuário");
+        editarUsuarioButton.setFont(new Font("Arial", Font.BOLD, 14));
+        editarUsuarioButton.setVisible(false);
+
+        DefaultListModel<String> userModel = new DefaultListModel<>();
+        userList = new JList<>(userModel);
+
         // Adicione estilos aos componentes
         emailField.setFont(new Font("Arial", Font.PLAIN, 14));
         passwordField.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -104,6 +119,8 @@ public class UserInterfaceLogin {
         buttonPanel.add(cadastroButton);
         buttonPanel.add(backButton);
         buttonPanel.add(logoutButton);
+        buttonPanel.add(listarUsuariosButton);
+        buttonPanel.add(editarUsuarioButton);
 
         mainPanel.add(serverConfigPanel, BorderLayout.NORTH);
         mainPanel.add(loginPanel, BorderLayout.CENTER);
@@ -240,6 +257,72 @@ public class UserInterfaceLogin {
                 }
             }
         });
+
+        listarUsuariosButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String action = "listar-usuarios";
+                ObjectMapper mapper = new ObjectMapper();
+                String token = cliente.getToken();
+
+                if (Objects.equals(token, "")) {
+                    JOptionPane.showMessageDialog(null, "Você precisa estar logado para listar usuários");
+                    return;
+                }
+
+                ObjectNode requestData = mapper.createObjectNode();
+                requestData.put("action", action);
+                ObjectNode data = mapper.createObjectNode();
+                data.put("token", token);
+                requestData.set("data", data);
+
+                try {
+                    String jsonString = mapper.writeValueAsString(requestData);
+                    cliente.sendRequestToServer(jsonString, action);
+                } catch (JsonProcessingException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        editarUsuarioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String action = "autoedicao-usuario";
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode data = mapper.createObjectNode();
+                String token = cliente.getToken();
+                String nome = nameField.getText();
+                String email = emailField.getText();
+                String senha = new String(passwordField.getPassword());
+
+                data.put("name", nome);
+                data.put("email", email);
+                data.put("password", passwordMD5(senha));
+
+                if (Objects.equals(token, "")) {
+                    JOptionPane.showMessageDialog(null, "Você precisa estar logado para editar usuário");
+                    return;
+                }
+                if (isAdmin(token)) {
+                    action = "pedido-edicao-usuario";
+                }
+                data.put("token", token);
+                data.put("user_id", getCurrentUserId(token));
+
+                ObjectNode requestData = mapper.createObjectNode();
+                requestData.put("action", action);
+                requestData.set("data", data);
+                System.out.println(requestData);
+
+                try {
+                    String jsonString = mapper.writeValueAsString(requestData);
+                    cliente.sendRequestToServer(jsonString, action);
+                } catch (JsonProcessingException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
     }
 
     private static Jws<Claims> parseToken(String token) {
@@ -252,6 +335,12 @@ public class UserInterfaceLogin {
         return parsedToken.getBody().get("admin", Boolean.class);
     }
 
+    public static String getCurrentUserId(String token) {
+        Jws<Claims> parsedToken = parseToken(token);
+
+        return parsedToken.getBody().get("user_id", String.class);
+    }
+
     public String passwordMD5(String password) {
         return DigestUtils.md5Hex(password).toUpperCase();
     }
@@ -259,6 +348,34 @@ public class UserInterfaceLogin {
     public void setLoginButtonListener(ActionListener listener) {
         loginButton.addActionListener(listener);
     }
+
+    public void updateUsersList(ObjectNode responseData) {
+        if (responseData.has("users")) {
+            JsonNode users = responseData.get("users");
+            DefaultListModel<String> userModel = new DefaultListModel<>();
+
+            for (JsonNode user : users) {
+                String userName = user.get("name").asText();
+                userModel.addElement(userName);
+            }
+
+            // Atualize sua lista de usuários na interface gráfica aqui
+            // Por exemplo, suponha que você tenha uma JList userList:
+            userList.setModel(userModel);
+        }
+    }
+
+    public ObjectNode getResponseData(String response) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode jsonNode = mapper.readTree(response);
+            return (jsonNode.has("data")) ? (ObjectNode) jsonNode.get("data") : null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     public String getServerIP() {
         return serverIpField.getText();

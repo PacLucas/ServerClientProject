@@ -2,7 +2,9 @@ package com.servidor;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.servidor.database.User;
 import io.jsonwebtoken.*;
 import com.servidor.database.DatabaseManager;
 
@@ -10,6 +12,7 @@ import java.io.*;
 import java.net.Socket;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,13 +71,13 @@ public class ClientHandler implements Runnable {
                     case "login":
                         String password = data.get("password").asText();
                         String loginEmail = data.get("email").asText();
-                        ResultSet user = isValidLogin(loginEmail, password);
+                        ResultSet currentUser = isValidLogin(loginEmail, password);
 
-                        if (user != null) {
+                        if (currentUser != null) {
                             message = "Logado com sucesso";
                             error = false;
 
-                            String token = generateJWT(user.getString("id"), user.getString("tipo").equals("admin"));
+                            String token = generateJWT(currentUser.getString("id"), currentUser.getString("tipo").equals("admin"));
 
                             responseData = mapper.createObjectNode().put("token", token);
                         } else {
@@ -129,11 +132,34 @@ public class ClientHandler implements Runnable {
                         }
                         break;
 
+                    case "listar-usuarios":
+                        String tokenListarUsuarios = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
 
+                        if (!Objects.equals(tokenListarUsuarios, "") && isValidUser(tokenListarUsuarios)) {
+                            List<User> users = dbManager.listarUsuarios();
+
+                            if (!users.isEmpty()) {
+                                responseData = mapper.createObjectNode();
+                                ArrayNode usersArray = responseData.putArray("users");
+
+                                for (User user : users) {
+                                    ObjectNode userNode = mapper.createObjectNode();
+                                    userNode.put("id", user.getId());
+                                    userNode.put("name", user.getNome());
+                                    userNode.put("type", user.getTipo());
+                                    userNode.put("email", user.getEmail());
+                                    usersArray.add(userNode);
+                                }
+                            } else {
+                                message = "Nenhum usuário encontrado.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
 
                     default:
                         message = "Ação '" + action + "' desconhecida";
-                        sendResponse(writer, error, message, action, null);
                         break;
                 }
 

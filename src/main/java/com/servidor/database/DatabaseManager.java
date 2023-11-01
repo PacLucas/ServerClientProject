@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.mindrot.jbcrypt.BCrypt;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseManager {
     private static Connection connection;
@@ -84,4 +86,27 @@ public class DatabaseManager {
         return false;
     }
 
+    public List<User> listarUsuarios() {
+        String sql = "SELECT id, nome, tipo, email FROM usuarios";
+        List<User> users = new ArrayList<>();
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String nome = resultSet.getString("nome");
+                String tipo = resultSet.getString("tipo");
+                String email = resultSet.getString("email");
+
+                User user = new User(id, nome, tipo, email);
+                users.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return users;
+    }
 }

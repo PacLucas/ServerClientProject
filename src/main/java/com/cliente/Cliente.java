@@ -1,5 +1,8 @@
 package com.cliente;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import javax.swing.*;
 
 public class Cliente {
@@ -30,6 +33,8 @@ public class Cliente {
             switch (action) {
                 case "login":
                     JOptionPane.showMessageDialog(null, "Login realizado com sucesso!");
+                    userInterfaceLogin.listarUsuariosButton.setVisible(true);
+                    userInterfaceLogin.editarUsuarioButton.setVisible(true);
                     break;
 
                 case "logout":
@@ -49,11 +54,17 @@ public class Cliente {
                     JOptionPane.showMessageDialog(null, "Usuário cadastrado com sucesso!");
                     break;
 
-                default:
+                case "listar-usuarios":
+                    break;
 
+                default:
                     break;
             }
         }
+    }
+
+    public void updateUsersList(JsonNode usuarios) {
+        userInterfaceLogin.updateUsersList((ObjectNode) usuarios);
     }
 
     public String getServerIP() {
