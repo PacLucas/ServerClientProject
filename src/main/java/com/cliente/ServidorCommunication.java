@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
@@ -71,9 +72,11 @@ public class ServidorCommunication {
                             JOptionPane.showMessageDialog(null, "Resposta do servidor inválida: Token ausente.");
                         }
                     }
-                    if (responseJson.get("action").asText().equals("listar-usuarios")) {
-                        if (responseJson.has("data") && responseJson.get("data").has("usuarios")) {
-                            this.cliente.updateUsersList(responseJson.get("data").get("usuarios"));
+                    if (responseJson.get("action").asText().equals("listar-usuarios") || responseJson.get("action").asText().equals("pedido-proprio-usuario")) {
+                        if (responseJson.has("data") && responseJson.get("data").has("users")) {
+                            this.cliente.updateUsersList(responseJson.get("data").get("users"));
+                        } else if (responseJson.has("data") && responseJson.get("data").has("user")) {
+                            this.cliente.updateUsersList(responseJson.get("data").get("user"));
                         } else {
                             JOptionPane.showMessageDialog(null, "Resposta do servidor inválida: Lista de usuários ausente.");
                         }

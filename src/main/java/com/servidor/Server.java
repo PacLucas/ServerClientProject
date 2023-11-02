@@ -56,6 +56,7 @@ public class Server {
         startButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 int port = Integer.parseInt(portField.getText());
+                startButton.setVisible(false);
                 startServer(port);
             }
         });
@@ -63,6 +64,7 @@ public class Server {
         stopButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 stopServer();
+                startButton.setVisible(true);
             }
         });
 
@@ -76,6 +78,8 @@ public class Server {
         if (!dbManager.emailJaExiste("admin@admin.com")) {
             dbManager.inserirUsuario("Admin", "admin@admin.com","C93CCD78B2076528346216B3B2F701E6", "admin"); // Senha: admin1234
         }
+
+        startButton.doClick();
     }
 
     public void start() {
@@ -92,7 +96,7 @@ public class Server {
                         connectionListArea.append("Servidor iniciado na porta " + port + "\n");
                         isServerRunning = true;
 
-                        while (true) {
+                        while (isServerRunning) {
                             try {
                                 Socket clientSocket = serverSocket.accept();
                                 connectionListArea.append("Nova conexão: " + clientSocket.getInetAddress().getHostAddress() + "\n");
@@ -118,9 +122,8 @@ public class Server {
 
     public void stopServer() {
         if (isServerRunning) {
-            isServerRunning = false;
-
             try {
+                isServerRunning = false;
                 // Encerre todas as conexões e threads ativas
                 for (ClientHandler client : clients) {
                     client.stop();

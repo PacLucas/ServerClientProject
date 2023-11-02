@@ -153,4 +153,55 @@ public class DatabaseManager {
             return false;
         }
     }
+
+    public User encontrarUsuarioPorEmailESenha(String email, String senha) {
+        String sql = "SELECT id, nome, tipo, email, senha FROM usuarios WHERE email = ?";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, email);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                String storedPasswordBCrypt = resultSet.getString("senha");
+
+                if (BCrypt.checkpw(senha, storedPasswordBCrypt)) {
+                    int id = resultSet.getInt("id");
+                    String nome = resultSet.getString("nome");
+                    String tipo = resultSet.getString("tipo");
+                    String userEmail = resultSet.getString("email");
+
+                    User user = new User(id, nome, tipo, userEmail);
+                    return user;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public User encontrarUsuarioPorId(String userId) {
+        String sql = "SELECT id, nome, tipo, email, senha FROM usuarios WHERE id = ?";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, userId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String nome = resultSet.getString("nome");
+                String tipo = resultSet.getString("tipo");
+                String userEmail = resultSet.getString("email");
+
+                User user = new User(id, nome, tipo, userEmail);
+                return user;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
 }

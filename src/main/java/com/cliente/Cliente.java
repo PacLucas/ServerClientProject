@@ -1,6 +1,7 @@
 package com.cliente;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import javax.swing.*;
@@ -32,40 +33,63 @@ public class Cliente {
         if (communication.sendRequest(json, action)) {
             switch (action) {
                 case "login":
+                    if (UserInterfaceLogin.isAdmin(getToken())) {
+                        userInterfaceLogin.mudarTela("cadastro");
+                    } else {
+                        userInterfaceLogin.mudarTela("listar");
+                        userInterfaceLogin.listarUsuariosButton.doClick();
+                    }
                     JOptionPane.showMessageDialog(null, "Login realizado com sucesso!");
-                    userInterfaceLogin.listarUsuariosButton.setVisible(true);
-                    userInterfaceLogin.editarUsuarioButton.setVisible(true);
-                    userInterfaceLogin.excluirUsuarioButton.setVisible(true);
                     break;
 
                 case "logout":
                     this.removeToken();
-                    userInterfaceLogin.logoutButton.setVisible(false);
-                    userInterfaceLogin.loginButton.setVisible(true);
                     communication.closeConnection();
+                    userInterfaceLogin.mudarTela("login");
                     JOptionPane.showMessageDialog(null, "Logout realizado com sucesso!");
                     break;
 
                 case "autocadastro-usuario":
                     JOptionPane.showMessageDialog(null, "Cadastro realizado com sucesso!");
-                    userInterfaceLogin.backButton.doClick();
                     break;
 
                 case "cadastro-usuario":
                     JOptionPane.showMessageDialog(null, "Usuário cadastrado com sucesso!");
                     break;
 
+                case "pedido-proprio-usuario":
+                    userInterfaceLogin.mudarTela("listar-usuarios");
+                    break;
+
                 case "listar-usuarios":
+                    userInterfaceLogin.mudarTela("listar-usuarios");
+                    break;
+
+                case "autoedicao-usuario":
+                case "edicao-usuario":
+                    JOptionPane.showMessageDialog(null, "Usuário editado com sucesso!");
+                    break;
+
+                case "excluir-usuario":
+                    JOptionPane.showMessageDialog(null, "Usuário excluído com sucesso!");
+                    break;
+
+                case "excluir-proprio-usuario":
+                    this.removeToken();
+                    communication.closeConnection();
+                    userInterfaceLogin.mudarTela("login");
+                    JOptionPane.showMessageDialog(null, "Usuário excluído com sucesso!");
                     break;
 
                 default:
+                    JOptionPane.showMessageDialog(null, "Ação não reconhecida");
                     break;
             }
         }
     }
 
     public void updateUsersList(JsonNode usuarios) {
-        userInterfaceLogin.updateUsersList((ObjectNode) usuarios);
+        userInterfaceLogin.updateUsersList((ArrayNode) usuarios);
     }
 
     public String getServerIP() {

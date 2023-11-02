@@ -132,18 +132,19 @@ public class ClientHandler implements Runnable {
                         }
                         break;
                     case "edicao-usuario":
-                    case "autoeditcao-usuario":
+                    case "autoedicao-usuario":
                         String tokenEditarUsuario = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
                         String edicaoEmail = data.get("email").asText();
                         String edicaoSenha = data.get("password").asText();
                         String edicaoNome = data.get("name").asText();
-                        int edicaoId = data.get("user_id").asInt();
+                        int edicaoId = isAdmin(tokenEditarUsuario) ? data.get("user_id").asInt() : data.get("id").asInt();
                         String edicaoTipo = (data.has("type") && !data.get("type").isNull()) ? data.get("type").asText() : "user";
 
                         if (!Objects.equals(tokenEditarUsuario, "") && isValidUser(tokenEditarUsuario)) {
                             boolean result = dbManager.editarUsuario(edicaoId, edicaoNome, edicaoEmail, edicaoTipo, edicaoSenha);
 
                             if(result) {
+                                error = false;
                                 message = "Usuario editado com sucesso";
                             } else {
                                 message = "Nenhum usuário encontrado.";
@@ -153,10 +154,35 @@ public class ClientHandler implements Runnable {
                         }
                         break;
 
-                    case "listar-usuarios":
+                    case "pedido-proprio-usuario":
                         String tokenListarUsuarios = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
 
                         if (!Objects.equals(tokenListarUsuarios, "") && isValidUser(tokenListarUsuarios)) {
+                            User user = dbManager.encontrarUsuarioPorId(getTokenUserId(tokenListarUsuarios));
+
+                            if (user != null) {
+                                responseData = mapper.createObjectNode();
+                                ArrayNode usersArray = responseData.putArray("user");
+
+                                ObjectNode userNode = mapper.createObjectNode();
+                                userNode.put("id", user.getId());
+                                userNode.put("name", user.getNome());
+                                userNode.put("type", user.getTipo());
+                                userNode.put("email", user.getEmail());
+                                usersArray.add(userNode);
+                                error = false;
+                            } else {
+                                message = "Nenhum usuário encontrado.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
+                    case "listar-usuarios":
+                        String tokenPedidoUsuario = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenPedidoUsuario, "") && isValidUser(tokenPedidoUsuario)) {
                             List<User> users = dbManager.listarUsuarios();
 
                             if (!users.isEmpty()) {
@@ -171,6 +197,7 @@ public class ClientHandler implements Runnable {
                                     userNode.put("email", user.getEmail());
                                     usersArray.add(userNode);
                                 }
+                                error = false;
                             } else {
                                 message = "Nenhum usuário encontrado.";
                             }
@@ -184,9 +211,17 @@ public class ClientHandler implements Runnable {
                         String tokenExcluirUsuario = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
 
                         if (!Objects.equals(tokenExcluirUsuario, "") && isValidUser(tokenExcluirUsuario)) {
-                            boolean result = dbManager.excluirUsuario(data.get("user_id").asInt());
+                            int userId = 0;
 
+                            if (isAdmin(tokenExcluirUsuario)) {
+                                userId = data.get("user_id").asInt();
+                            } else {
+                                userId = dbManager.encontrarUsuarioPorEmailESenha(data.get("email").asText(), data.get("password").asText()).getId();
+                            }
+
+                            boolean result = dbManager.excluirUsuario(userId);
                             if(result) {
+                                error = false;
                                 message = "Usuario excluido com sucesso";
                             } else {
                                 message = "Nenhum usuário encontrado.";
@@ -224,6 +259,12 @@ public class ClientHandler implements Runnable {
         String userId = parsedToken.getBody().get("user_id", String.class);
 
         return dbManager.verificarUsuarioValido(userId);
+    }
+
+    public static String getTokenUserId(String token) {
+        Jws<Claims> parsedToken = parseToken(token);
+
+        return parsedToken.getBody().get("user_id", String.class);
     }
 
     private void sendResponse(PrintWriter writer, boolean error, String message, String action, ObjectNode data) {
