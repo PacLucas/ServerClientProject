@@ -135,7 +135,7 @@ public class ClientHandler implements Runnable {
                     case "autoedicao-usuario":
                         String tokenEditarUsuario = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
                         String edicaoEmail = data.get("email").asText();
-                        String edicaoSenha = data.get("password").asText();
+                        String edicaoSenha = (data.has("password") && !data.get("password").isNull()) ? data.get("password").asText() : null;
                         String edicaoNome = data.get("name").asText();
                         int edicaoId = isAdmin(tokenEditarUsuario) ? data.get("user_id").asInt() : data.get("id").asInt();
                         String edicaoTipo = (data.has("type") && !data.get("type").isNull()) ? data.get("type").asText() : "user";
