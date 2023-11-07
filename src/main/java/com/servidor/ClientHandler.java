@@ -171,6 +171,7 @@ public class ClientHandler implements Runnable {
                                 userNode.put("email", user.getEmail());
                                 usersArray.add(userNode);
                                 error = false;
+                                message = "Sucesso";
                             } else {
                                 message = "Nenhum usuário encontrado.";
                             }
@@ -198,6 +199,7 @@ public class ClientHandler implements Runnable {
                                     usersArray.add(userNode);
                                 }
                                 error = false;
+                                message = "Sucesso";
                             } else {
                                 message = "Nenhum usuário encontrado.";
                             }
