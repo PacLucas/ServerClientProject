@@ -582,7 +582,7 @@ public class UserInterfaceLogin {
             }
             if (isAdmin(token)) {
                 action = "edicao-usuario";
-                data.put("user_id", idField.getText());
+                data.put("user_id", Integer.parseInt(idField.getText()));
                 data.put("type", (String) tipoComboBox.getSelectedItem());
             } else {
                 data.put("id", getCurrentUserId(token));
@@ -610,7 +610,7 @@ public class UserInterfaceLogin {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode data = mapper.createObjectNode();
             String token = cliente.getToken();
-            String userId = idField.getText();
+            Integer userId = Integer.parseInt(idField.getText());
             String email = emailField.getText();
             String senha = new String(passwordField.getPassword());
 
