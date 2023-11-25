@@ -71,7 +71,7 @@ public class Server {
         clients = new ArrayList<>();
 
         connection = DatabaseConnection.connect();
-        DatabaseSetup.createTable(connection);
+        DatabaseSetup.createTables(connection);
 
         // Cadastro de admin padrao apenas para testes
         DatabaseManager dbManager = new DatabaseManager(connection);

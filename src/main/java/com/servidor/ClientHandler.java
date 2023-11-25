@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.servidor.database.Pontos;
+import com.servidor.database.Segmentos;
 import com.servidor.database.User;
 import io.jsonwebtoken.*;
 import com.servidor.database.DatabaseManager;
@@ -227,6 +229,233 @@ public class ClientHandler implements Runnable {
                                 message = "Usuario excluido com sucesso";
                             } else {
                                 message = "Nenhum usuário encontrado.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
+                    case "cadastro-ponto":
+                        String tokenCadastrarPonto = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenCadastrarPonto, "") && isValidUser(tokenCadastrarPonto) && isAdmin(tokenCadastrarPonto)) {
+                            String criacaoPontoNome = data.get("name").asText();
+                            String criacaoPontoObs = data.get("obs").asText();
+
+                            boolean result = dbManager.inserirPonto(criacaoPontoNome, criacaoPontoObs);
+                            if(result) {
+                                error = false;
+                                message = "Ponto cadastrado com sucesso";
+                            } else {
+                                message = "Erro ao cadastrar ponto.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
+                    case "pedido-edicao-ponto":
+                        String tokenPedidoEdicaoPonto = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenPedidoEdicaoPonto, "") && isValidUser(tokenPedidoEdicaoPonto) && isAdmin(tokenPedidoEdicaoPonto)) {
+                            String pedidoEdicaoPontoId = data.get("id").asText();
+
+                            Pontos ponto = dbManager.encontrarPontoPorId(pedidoEdicaoPontoId);
+                            if (ponto != null) {
+                                responseData = mapper.createObjectNode();
+                                ArrayNode usersArray = responseData.putArray("user");
+
+                                ObjectNode pontoNode = mapper.createObjectNode();
+                                pontoNode.put("id", ponto.getId());
+                                pontoNode.put("name", ponto.getNome());
+                                pontoNode.put("obs", ponto.getObs());
+                                usersArray.add(pontoNode);
+                                error = false;
+                                message = "Sucesso";
+                            } else {
+                                message = "Nenhum ponto encontrado.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
+                    case "listar-pontos":
+                        String tokenListarPonto = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenListarPonto, "") && isValidUser(tokenListarPonto) && isAdmin(tokenListarPonto)) {
+                            List<Pontos> pontos = dbManager.listarPontos();
+
+                            if (!pontos.isEmpty()) {
+                                responseData = mapper.createObjectNode();
+                                ArrayNode usersArray = responseData.putArray("pontos");
+
+                                for (Pontos ponto : pontos) {
+                                    ObjectNode pontoNode = mapper.createObjectNode();
+                                    pontoNode.put("id", ponto.getId());
+                                    pontoNode.put("name", ponto.getNome());
+                                    pontoNode.put("obs", ponto.getObs());
+                                    usersArray.add(pontoNode);
+                                }
+                                error = false;
+                                message = "Sucesso";
+                            } else {
+                                message = "Nenhum ponto encontrado.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
+                    case "excluir-ponto":
+                        String tokenExcluirPonto = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenExcluirPonto, "") && isValidUser(tokenExcluirPonto) && isAdmin(tokenExcluirPonto)) {
+                            int pontoId = 0;
+
+                            pontoId = data.get("ponto_id").asInt();
+
+                            boolean result = dbManager.excluirPonto(pontoId);
+                            if(result) {
+                                error = false;
+                                message = "Usuario excluido com sucesso";
+                            } else {
+                                message = "Nenhum usuário encontrado.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
+                    case "cadastro-segmento":
+                        String tokenCadastrarSegmento = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenCadastrarSegmento, "") && isValidUser(tokenCadastrarSegmento) && isAdmin(tokenCadastrarSegmento)) {
+                            String pontoOrigemId = data.get("ponto_origem").asText();
+                            String pontoDestinoId = data.get("ponto_Destino").asText();
+                            String direcao = data.get("direcao").asText();
+                            String distancia = data.get("distancia").asText();
+                            String obs = data.get("obs").asText();
+
+                            Pontos pontoOrigem = dbManager.encontrarPontoPorId(pontoOrigemId);
+                            Pontos pontoDestino = dbManager.encontrarPontoPorId(pontoDestinoId);
+
+                            if (pontoOrigem != null || pontoDestino != null) {
+                                boolean result = dbManager.inserirSegmento(pontoOrigem, pontoDestino, direcao, distancia, obs);
+                                if(result) {
+                                    error = false;
+                                    message = "Segmento cadastrado com sucesso";
+                                } else {
+                                    message = "Erro ao cadastrar segmento.";
+                                }
+                            } else {
+                                message = "Pontos nao encontrados.";
+                            }
+
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
+                    case "pedido-edicao-segmento":
+                        String tokenPedidoEdicaoSegmento = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenPedidoEdicaoSegmento, "") && isValidUser(tokenPedidoEdicaoSegmento) && isAdmin(tokenPedidoEdicaoSegmento)) {
+                            String pedidoEdicaoSegmentoId = data.get("id").asText();
+
+                            Segmentos segmento = dbManager.encontrarSegmentoPorId(pedidoEdicaoSegmentoId);
+                            if (segmento != null) {
+                                responseData = mapper.createObjectNode();
+                                ArrayNode segmentosArray = responseData.putArray("user");
+                                Pontos pontoOrigem = segmento.getPonto_origem();
+                                Pontos pontoDestino = segmento.getPonto_destino();
+
+                                ObjectMapper segmentoMapper = new ObjectMapper();
+                                ObjectNode segmentoNode = mapper.createObjectNode();
+                                segmentoNode.put("id", segmento.getId());
+
+                                ObjectNode ponto_origem = segmentoNode.putObject("ponto_origem");
+                                ponto_origem.put("id", pontoOrigem.getId());
+                                ponto_origem.put("name", pontoOrigem.getNome());
+                                ponto_origem.put("obs", pontoOrigem.getObs());
+
+                                ObjectNode ponto_destino = segmentoNode.putObject("ponto_destino");
+                                ponto_destino.put("id", pontoDestino.getId());
+                                ponto_destino.put("name", pontoDestino.getNome());
+                                ponto_destino.put("obs", pontoDestino.getObs());
+
+                                segmentoNode.put("direcao", segmento.getDirecao());
+                                segmentoNode.put("distancia", segmento.getDistancia());
+                                segmentoNode.put("obs", segmento.getObs());
+                                segmentoNode.put("obs", segmento.getObs());
+                                segmentosArray.add(segmentoNode);
+                                error = false;
+                                message = "Sucesso";
+                            } else {
+                                message = "Nenhum segmento encontrado.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
+                    case "listar-segmentos":
+                        String tokenListarSegmento = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenListarSegmento, "") && isValidUser(tokenListarSegmento) && isAdmin(tokenListarSegmento)) {
+                            List<Segmentos> segmentos = dbManager.listarSegmentos();
+
+                            if (!segmentos.isEmpty()) {
+                                responseData = mapper.createObjectNode();
+                                ArrayNode segmentosArray = responseData.putArray("segmentos");
+
+                                for (Segmentos segmento : segmentos) {
+                                    Pontos pontoOrigem = segmento.getPonto_origem();
+                                    Pontos pontoDestino = segmento.getPonto_destino();
+
+                                    ObjectNode segmentoNode = mapper.createObjectNode();
+                                    segmentoNode.put("id", segmento.getId());
+
+                                    ObjectNode ponto_origem = segmentoNode.putObject("ponto_origem");
+                                    ponto_origem.put("id", pontoOrigem.getId());
+                                    ponto_origem.put("name", pontoOrigem.getNome());
+                                    ponto_origem.put("obs", pontoOrigem.getObs());
+
+                                    ObjectNode ponto_destino = segmentoNode.putObject("ponto_destino");
+                                    ponto_destino.put("id", pontoDestino.getId());
+                                    ponto_destino.put("name", pontoDestino.getNome());
+                                    ponto_destino.put("obs", pontoDestino.getObs());
+
+                                    segmentoNode.put("direcao", segmento.getDirecao());
+                                    segmentoNode.put("distancia", segmento.getDistancia());
+                                    segmentoNode.put("obs", segmento.getObs());
+                                    segmentoNode.put("obs", segmento.getObs());
+                                    segmentosArray.add(segmentoNode);
+                                }
+                                error = false;
+                                message = "Sucesso";
+                            } else {
+                                message = "Nenhum segmento encontrado.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
+                    case "excluir-segmento":
+                        String tokenExcluirSegmento = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenExcluirSegmento, "") && isValidUser(tokenExcluirSegmento) && isAdmin(tokenExcluirSegmento)) {
+                            int segmentoId = 0;
+
+                            segmentoId = data.get("segmento_id").asInt();
+
+                            boolean result = dbManager.excluirSegmento(segmentoId);
+                            if(result) {
+                                error = false;
+                                message = "Segmento excluido com sucesso";
+                            } else {
+                                message = "Nenhum segmento encontrado.";
                             }
                         } else {
                             message = "Usuário não está logado ou token inválido.";
