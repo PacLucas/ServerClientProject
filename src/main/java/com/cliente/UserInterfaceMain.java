@@ -604,6 +604,7 @@ public class UserInterfaceMain {
             String obs = cadastroSegmentoObsField.getText();
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode data = mapper.createObjectNode();
+            ObjectNode segmentoNode = mapper.createObjectNode();
 
             ObjectNode cadastroData = mapper.createObjectNode();
 
@@ -611,19 +612,20 @@ public class UserInterfaceMain {
             if (currentPonto == null) {
                 return;
             }
-            data.putIfAbsent("ponto_origem", currentPonto.get(0));
+            data.putIfAbsent("segmento", segmentoNode);
+            segmentoNode.putIfAbsent("ponto_origem", currentPonto);
             currentPonto = null;
             getPonto(Integer.parseInt(ponto_destino), token);
             if (currentPonto == null) {
                 return;
             }
-            data.putIfAbsent("ponto_destino", currentPonto.get(0));
+            segmentoNode.putIfAbsent("ponto_destino", currentPonto);
             currentPonto = null;
 
             data.put("token", token);
-            data.put("direcao", direcao);
-            data.put("distancia", Integer.parseInt(distancia));
-            data.put("obs", obs);
+            segmentoNode.put("direcao", direcao);
+            segmentoNode.put("distancia", Integer.parseInt(distancia));
+            segmentoNode.put("obs", obs);
 
             cadastroData.put("action", action);
             cadastroData.set("data", data);
@@ -653,26 +655,28 @@ public class UserInterfaceMain {
             String obs = cadastroSegmentoObsField.getText();
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode data = mapper.createObjectNode();
+            ObjectNode segmentoNode = mapper.createObjectNode();
 
             ObjectNode cadastroData = mapper.createObjectNode();
+            data.putIfAbsent("segmento", segmentoNode);
 
             getPonto(Integer.parseInt(ponto_origem), token);
             if (currentPonto == null) {
                 return;
             }
-            data.putIfAbsent("ponto_origem", currentPonto.get(0));
+            segmentoNode.putIfAbsent("ponto_origem", currentPonto);
             currentPonto = null;
             getPonto(Integer.parseInt(ponto_destino), token);
             if (currentPonto == null) {
                 return;
             }
-            data.putIfAbsent("ponto_destino", currentPonto.get(0));
+            segmentoNode.putIfAbsent("ponto_destino", currentPonto);
             currentPonto = null;
 
             data.put("token", token);
-            data.put("direcao", direcao);
-            data.put("distancia", Integer.parseInt(distancia));
-            data.put("obs", obs);
+            segmentoNode.put("direcao", direcao);
+            segmentoNode.put("distancia", Integer.parseInt(distancia));
+            segmentoNode.put("obs", obs);
             data.put("segmento_id", Integer.parseInt(idSegmentoField.getText()));
 
             cadastroData.put("action", action);

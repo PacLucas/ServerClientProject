@@ -268,13 +268,11 @@ public class ClientHandler implements Runnable {
                             Pontos ponto = dbManager.encontrarPontoPorId(pedidoEdicaoPontoId);
                             if (ponto != null) {
                                 responseData = mapper.createObjectNode();
-                                ArrayNode usersArray = responseData.putArray("ponto");
+                                responseData.putIfAbsent("ponto", mapper.createObjectNode());
+                                ((ObjectNode) responseData.get("ponto")).put("id", ponto.getId());
+                                ((ObjectNode) responseData.get("ponto")).put("name", ponto.getNome());
+                                ((ObjectNode) responseData.get("ponto")).put("obs", ponto.getObs());
 
-                                ObjectNode pontoNode = mapper.createObjectNode();
-                                pontoNode.put("id", ponto.getId());
-                                pontoNode.put("name", ponto.getNome());
-                                pontoNode.put("obs", ponto.getObs());
-                                usersArray.add(pontoNode);
                                 error = false;
                                 message = "Sucesso";
                             } else {
@@ -360,11 +358,11 @@ public class ClientHandler implements Runnable {
                         String tokenCadastrarSegmento = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
 
                         if (!Objects.equals(tokenCadastrarSegmento, "") && isValidUser(tokenCadastrarSegmento) && isAdmin(tokenCadastrarSegmento)) {
-                            Integer pontoOrigemId = data.get("ponto_origem").get("id").asInt();
-                            Integer pontoDestinoId = data.get("ponto_destino").get("id").asInt();
-                            String direcao = data.get("direcao").asText();
-                            Integer distancia = data.get("distancia").asInt();
-                            String obs = data.get("obs").asText();
+                            Integer pontoOrigemId = data.get("segmento").get("ponto_origem").get("id").asInt();
+                            Integer pontoDestinoId = data.get("segmento").get("ponto_destino").get("id").asInt();
+                            String direcao = data.get("segmento").get("direcao").asText();
+                            Integer distancia = data.get("segmento").get("distancia").asInt();
+                            String obs = data.get("segmento").get("obs").asText();
 
                             Pontos pontoOrigem = dbManager.encontrarPontoPorId(pontoOrigemId);
                             Pontos pontoDestino = dbManager.encontrarPontoPorId(pontoDestinoId);
@@ -390,11 +388,11 @@ public class ClientHandler implements Runnable {
                         String tokenEditarSegmento = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
 
                         if (!Objects.equals(tokenEditarSegmento, "") && isValidUser(tokenEditarSegmento) && isAdmin(tokenEditarSegmento)) {
-                            Integer pontoOrigemIdEdicao = data.get("ponto_origem").get("id").asInt();
-                            Integer pontoDestinoIdEdicao = data.get("ponto_destino").get("id").asInt();
-                            String direcaoEdicao = data.get("direcao").asText();
-                            Integer distanciaEdicao = data.get("distancia").asInt();
-                            String obsEdicao = data.get("obs").asText();
+                            Integer pontoOrigemIdEdicao = data.get("segmento").get("ponto_origem").get("id").asInt();
+                            Integer pontoDestinoIdEdicao = data.get("segmento").get("ponto_destino").get("id").asInt();
+                            String direcaoEdicao = data.get("segmento").get("direcao").asText();
+                            Integer distanciaEdicao = data.get("segmento").get("distancia").asInt();
+                            String obsEdicao = data.get("segmento").get("obs").asText();
                             int segmentoEdicaoId = data.get("segmento_id").asInt();
 
                             Pontos pontoOrigem = dbManager.encontrarPontoPorId(pontoOrigemIdEdicao);
@@ -426,27 +424,25 @@ public class ClientHandler implements Runnable {
                             Segmentos segmento = dbManager.encontrarSegmentoPorId(pedidoEdicaoSegmentoId);
                             if (segmento != null) {
                                 responseData = mapper.createObjectNode();
-                                ArrayNode segmentosArray = responseData.putArray("segmento");
-                                ObjectNode segmentoEdicaoNode = mapper.createObjectNode();
-                                segmentoEdicaoNode.put("id", segmento.getId());
-                                segmentoEdicaoNode.put("direcao", segmento.getDirecao());
-                                segmentoEdicaoNode.put("distancia", segmento.getDistancia());
-                                segmentoEdicaoNode.put("obs", segmento.getObs());
+                                responseData.putIfAbsent("segmento", mapper.createObjectNode());
+                                ((ObjectNode) responseData.get("segmento")).put("id", segmento.getId());
+                                ((ObjectNode) responseData.get("segmento")).put("direcao", segmento.getDirecao());
+                                ((ObjectNode) responseData.get("segmento")).put("distancia", segmento.getDistancia());
+                                ((ObjectNode) responseData.get("segmento")).put("obs", segmento.getObs());
 
                                 Pontos pontoOrigem = dbManager.encontrarPontoPorId(segmento.getPonto_origem());
                                 Pontos pontoDestino = dbManager.encontrarPontoPorId(segmento.getPonto_destino());
 
-                                ObjectNode ponto_origem = segmentoEdicaoNode.putObject("ponto_origem");
+                                ObjectNode ponto_origem =  ((ObjectNode) responseData.get("segmento")).putObject("ponto_origem");
                                 ponto_origem.put("id", pontoOrigem.getId());
                                 ponto_origem.put("name", pontoOrigem.getNome());
                                 ponto_origem.put("obs", pontoOrigem.getObs());
 
-                                ObjectNode ponto_destino = segmentoEdicaoNode.putObject("ponto_destino");
+                                ObjectNode ponto_destino = ((ObjectNode) responseData.get("segmento")).putObject("ponto_destino");
                                 ponto_destino.put("id", pontoDestino.getId());
                                 ponto_destino.put("name", pontoDestino.getNome());
                                 ponto_destino.put("obs", pontoDestino.getObs());
 
-                                segmentosArray.add(segmentoEdicaoNode);
                                 error = false;
                                 message = "Sucesso";
                             } else {
