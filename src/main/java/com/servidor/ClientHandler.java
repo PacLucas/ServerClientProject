@@ -395,7 +395,7 @@ public class ClientHandler implements Runnable {
                             String direcaoEdicao = data.get("direcao").asText();
                             Integer distanciaEdicao = data.get("distancia").asInt();
                             String obsEdicao = data.get("obs").asText();
-                            Integer segmentoEdicaoId = data.get("segmento_id").asInt();
+                            int segmentoEdicaoId = data.get("segmento_id").asInt();
 
                             Pontos pontoOrigem = dbManager.encontrarPontoPorId(pontoOrigemIdEdicao);
                             Pontos pontoDestino = dbManager.encontrarPontoPorId(pontoDestinoIdEdicao);
@@ -421,37 +421,32 @@ public class ClientHandler implements Runnable {
                         String tokenPedidoEdicaoSegmento = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
 
                         if (!Objects.equals(tokenPedidoEdicaoSegmento, "") && isValidUser(tokenPedidoEdicaoSegmento) && isAdmin(tokenPedidoEdicaoSegmento)) {
-                            String pedidoEdicaoSegmentoId = data.get("segmento_id").asText();
+                            Integer pedidoEdicaoSegmentoId = data.get("segmento_id").asInt();
 
                             Segmentos segmento = dbManager.encontrarSegmentoPorId(pedidoEdicaoSegmentoId);
                             if (segmento != null) {
                                 responseData = mapper.createObjectNode();
                                 ArrayNode segmentosArray = responseData.putArray("segmento");
-                                Integer pontoOrigem = segmento.getPonto_origem();
-                                Integer pontoDestino = segmento.getPonto_destino();
+                                ObjectNode segmentoEdicaoNode = mapper.createObjectNode();
+                                segmentoEdicaoNode.put("id", segmento.getId());
+                                segmentoEdicaoNode.put("direcao", segmento.getDirecao());
+                                segmentoEdicaoNode.put("distancia", segmento.getDistancia());
+                                segmentoEdicaoNode.put("obs", segmento.getObs());
 
-                                ObjectMapper segmentoMapper = new ObjectMapper();
-                                ObjectNode segmentoNode = segmentoMapper.createObjectNode();
-                                segmentoNode.put("id", segmento.getId());
+                                Pontos pontoOrigem = dbManager.encontrarPontoPorId(segmento.getPonto_origem());
+                                Pontos pontoDestino = dbManager.encontrarPontoPorId(segmento.getPonto_destino());
 
-                                Pontos pontoOrigemPedido = dbManager.encontrarPontoPorId(pontoOrigem);
-                                Pontos pontoDestinoPedido = dbManager.encontrarPontoPorId(pontoDestino);
+                                ObjectNode ponto_origem = segmentoEdicaoNode.putObject("ponto_origem");
+                                ponto_origem.put("id", pontoOrigem.getId());
+                                ponto_origem.put("name", pontoOrigem.getNome());
+                                ponto_origem.put("obs", pontoOrigem.getObs());
 
-                                ObjectNode ponto_origem = segmentoNode.putObject("ponto_origem");
-                                ponto_origem.put("id", pontoOrigemPedido.getId());
-                                ponto_origem.put("name", pontoOrigemPedido.getNome());
-                                ponto_origem.put("obs", pontoOrigemPedido.getObs());
+                                ObjectNode ponto_destino = segmentoEdicaoNode.putObject("ponto_destino");
+                                ponto_destino.put("id", pontoDestino.getId());
+                                ponto_destino.put("name", pontoDestino.getNome());
+                                ponto_destino.put("obs", pontoDestino.getObs());
 
-                                ObjectNode ponto_destino = segmentoNode.putObject("ponto_destino");
-                                ponto_destino.put("id", pontoDestinoPedido.getId());
-                                ponto_destino.put("name", pontoDestinoPedido.getNome());
-                                ponto_destino.put("obs", pontoDestinoPedido.getObs());
-
-                                segmentoNode.put("direcao", segmento.getDirecao());
-                                segmentoNode.put("distancia", segmento.getDistancia());
-                                segmentoNode.put("obs", segmento.getObs());
-                                segmentoNode.put("obs", segmento.getObs());
-                                segmentosArray.add(segmentoNode);
+                                segmentosArray.add(segmentoEdicaoNode);
                                 error = false;
                                 message = "Sucesso";
                             } else {

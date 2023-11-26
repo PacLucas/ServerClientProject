@@ -376,11 +376,11 @@ public class DatabaseManager {
         return null;
     }
 
-    public Segmentos encontrarSegmentoPorId(String segmentoId) {
+    public Segmentos encontrarSegmentoPorId(Integer segmentoId) {
         String sql = "SELECT id, ponto_origem, ponto_destino, direcao, distancia, obs FROM segmentos WHERE id = ?";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, segmentoId);
+            preparedStatement.setInt(1, segmentoId);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next()) {

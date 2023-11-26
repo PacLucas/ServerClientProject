@@ -46,6 +46,7 @@ public class Cliente {
                 case "logout":
                     this.removeToken();
                     communication.closeConnection();
+                    userInterfaceMain.hide();
                     userInterfaceLogin.mudarTela("login");
                     JOptionPane.showMessageDialog(null, "Logout realizado com sucesso!");
                     break;
