@@ -2,13 +2,13 @@ package com.servidor.database;
 
 public class Segmentos {
     private int id;
-    private Pontos ponto_origem;
-    private Pontos ponto_destino;
+    private Integer ponto_origem;
+    private Integer ponto_destino;
     private String direcao;
     private String distancia;
     private String obs;
 
-    public Segmentos(int id, Pontos ponto_origem, Pontos ponto_destino, String direcao, String distancia, String obs) {
+    public Segmentos(int id, Integer ponto_origem, Integer ponto_destino, String direcao, String distancia, String obs) {
         this.id = id;
         this.ponto_origem = ponto_origem;
         this.ponto_destino = ponto_destino;
@@ -25,19 +25,19 @@ public class Segmentos {
         this.id = id;
     }
 
-    public Pontos getPonto_origem() {
+    public Integer getPonto_origem() {
         return ponto_origem;
     }
 
-    public void setPonto_origem(Pontos ponto_origem) {
+    public void setPonto_origem(Integer ponto_origem) {
         this.ponto_origem = ponto_origem;
     }
 
-    public Pontos getPonto_destino() {
+    public Integer getPonto_destino() {
         return ponto_destino;
     }
 
-    public void setPonto_destino(Pontos ponto_destino) {
+    public void setPonto_destino(Integer ponto_destino) {
         this.ponto_destino = ponto_destino;
     }
 

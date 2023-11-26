@@ -81,6 +81,27 @@ public class ServidorCommunication {
                             JOptionPane.showMessageDialog(null, "Resposta do servidor inválida: Lista de usuários ausente.");
                         }
                     }
+                    if (responseJson.get("action").asText().equals("listar-pontos")) {
+                        if (responseJson.has("data") && responseJson.get("data").has("pontos")) {
+                            this.cliente.updatePontosList(responseJson.get("data").get("pontos"));
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Resposta do servidor inválida: Lista de pontos ausente.");
+                        }
+                    }
+                    if (responseJson.get("action").asText().equals("listar-segmentos")) {
+                        if (responseJson.has("data") && responseJson.get("data").has("segmentos")) {
+                            this.cliente.updateSegmentosList(responseJson.get("data").get("segmentos"));
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Resposta do servidor inválida: Lista de segmentos ausente.");
+                        }
+                    }
+                    if (responseJson.get("action").asText().equals("pedido-edicao-ponto")) {
+                        if (responseJson.has("data") && responseJson.get("data").has("ponto")) {
+                            this.cliente.updatePonto(responseJson.get("data").get("ponto"));
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Resposta do servidor inválida: Lista de pontos ausente.");
+                        }
+                    }
 
                     return true;
                 } else {

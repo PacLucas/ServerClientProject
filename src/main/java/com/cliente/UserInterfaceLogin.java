@@ -70,9 +70,9 @@ public class UserInterfaceLogin {
 
     public UserInterfaceLogin(Cliente cliente) {
         this.cliente = cliente;
-        frame = new JFrame("Cliente");
+        frame = new JFrame("Gerenciamento de Usuários");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 300);
+        frame.setSize(900, 400);
 
         // Painel de Configuração de Servidor
         serverConfigPanel = new JPanel(new FlowLayout());

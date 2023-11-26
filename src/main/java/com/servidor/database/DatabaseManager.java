@@ -4,6 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.mindrot.jbcrypt.BCrypt;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +43,6 @@ public class DatabaseManager {
             preparedStatement.setString(1, nome);
             preparedStatement.setString(2, obs);
             int rowsAffected = preparedStatement.executeUpdate();
-            System.out.println(rowsAffected);
             return rowsAffected > 0 ;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -47,17 +50,16 @@ public class DatabaseManager {
         }
     }
 
-    public static boolean inserirSegmento(Pontos pontoOrigem, Pontos pontoDestino, String direcao, String distancia, String obs) {
+    public static boolean inserirSegmento(Integer pontoOrigem, Integer pontoDestino, String direcao, Integer distancia, String obs) {
         String sql = "INSERT INTO segmentos (ponto_origem, ponto_destino, direcao, distancia, obs) VALUES (?, ?, ?, ?, ?)";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setObject(1, pontoOrigem);
-            preparedStatement.setObject(1, pontoDestino);
-            preparedStatement.setString(2, direcao);
-            preparedStatement.setString(2, distancia);
-            preparedStatement.setString(2, obs);
+            preparedStatement.setInt(1, pontoOrigem);
+            preparedStatement.setInt(2, pontoDestino);
+            preparedStatement.setString(3, direcao);
+            preparedStatement.setInt(4, distancia);
+            preparedStatement.setString(5, obs);
             int rowsAffected = preparedStatement.executeUpdate();
-            System.out.println(rowsAffected);
             return rowsAffected > 0 ;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -176,13 +178,13 @@ public class DatabaseManager {
 
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
-                Pontos pontoOrigem = resultSet.getObject("ponto_origem", Pontos.class);
-                Pontos pontoDestino = resultSet.getObject("ponto_destino", Pontos.class);
+                int pontoOrigemId = resultSet.getInt("ponto_origem");
+                int pontoDestinoId = resultSet.getInt("ponto_destino");
                 String direcao = resultSet.getString("direcao");
                 String distancia = resultSet.getString("distancia");
                 String obs = resultSet.getString("obs");
 
-                Segmentos segmento = new Segmentos(id, pontoOrigem, pontoDestino, direcao, distancia, obs);
+                Segmentos segmento = new Segmentos(id, pontoOrigemId, pontoDestinoId, direcao, distancia, obs);
                 segmentos.add(segmento);
             }
         } catch (SQLException e) {
@@ -221,6 +223,47 @@ public class DatabaseManager {
             return false;
         }
     }
+
+    public static boolean editarPonto(int pontoId, String novoNome, String novaObs) {
+        String sql;
+        sql = "UPDATE pontos SET nome = ?, obs = ? WHERE id = ?";
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, novoNome);
+            preparedStatement.setString(2, novaObs);
+            preparedStatement.setInt(3, pontoId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean editarSegmento(int segmentoId, Integer novoPontoOrigem, Integer novoPontoDestino, String novaDirecao, Integer novaDistancia, String novaObs) {
+        String sql;
+        sql = "UPDATE segmentos SET ponto_origem = ?, ponto_destino = ?, direcao = ?, distancia = ?, obs = ? WHERE id = ?";
+
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, novoPontoOrigem);
+            preparedStatement.setInt(2, novoPontoDestino);
+            preparedStatement.setString(3, novaDirecao);
+            preparedStatement.setInt(4, novaDistancia);
+            preparedStatement.setString(5, novaObs);
+            preparedStatement.setInt(6, segmentoId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
 
 
     public static boolean excluirUsuario(int userId) {
@@ -312,11 +355,11 @@ public class DatabaseManager {
         return null;
     }
 
-    public Pontos encontrarPontoPorId(String pontoId) {
+    public Pontos encontrarPontoPorId(Integer pontoId) {
         String sql = "SELECT id, nome, obs FROM pontos WHERE id = ?";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, pontoId);
+            preparedStatement.setInt(1, pontoId);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (resultSet.next()) {
@@ -324,7 +367,7 @@ public class DatabaseManager {
                 String nome = resultSet.getString("nome");
                 String obs = resultSet.getString("obs");
 
-                return (Pontos) new Pontos(id, nome, obs);
+                return new Pontos(id, nome, obs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -342,19 +385,35 @@ public class DatabaseManager {
 
             if (resultSet.next()) {
                 int id = resultSet.getInt("id");
-                Pontos pontoOrigem = resultSet.getObject("ponto_origem", Pontos.class);
-                Pontos pontoDestino = resultSet.getObject("ponto_destino", Pontos.class);
+                Integer pontoOrigem = resultSet.getInt("ponto_origem");
+                Integer pontoDestino = resultSet.getInt("ponto_destino");
                 String direcao = resultSet.getString("direcao");
                 String distancia = resultSet.getString("distancia");
                 String obs = resultSet.getString("obs");
 
-                return (Segmentos) new Segmentos(id, pontoOrigem, pontoDestino, direcao, distancia, obs);
+                return new Segmentos(id, pontoOrigem, pontoDestino, direcao, distancia, obs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         return null;
+    }
+
+    public void excluirSegmentosPorPonto(int pontoId) throws SQLException {
+        String sql = "DELETE FROM segmentos WHERE ponto_origem = ? OR ponto_destino = ?";
+
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setInt(1, pontoId);
+        preparedStatement.setInt(2, pontoId);
+
+        int rowsAffected = preparedStatement.executeUpdate();
+
+        if (rowsAffected > 0) {
+            System.out.println(rowsAffected + " segmento(s) excluído(s) com sucesso.");
+        } else {
+            System.out.println("Nenhum segmento encontrado com o ID do ponto de origem ou destino especificado.");
+        }
     }
 
 }

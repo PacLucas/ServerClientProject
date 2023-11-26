@@ -27,10 +27,10 @@ public class DatabaseSetup {
                 System.out.println("Tabela 'pontos' criada com sucesso.");
                 sql = "CREATE TABLE IF NOT EXISTS segmentos ("
                         + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                        + "ponto_origem INTEGER NOT NULL REFERENCES pontos(id),"
-                        + "ponto_destino INTEGER NOT NULL REFERENCES pontos(id),"
+                        + "ponto_origem INTEGER NOT NULL,"
+                        + "ponto_destino INTEGER NOT NULL,"
                         + "direcao TEXT NOT NULL,"
-                        + "distancia TEXT NOT NULL,"
+                        + "distancia INTEGER NOT NULL,"
                         + "obs TEXT"
                         + ")";
                 statement.execute(sql);

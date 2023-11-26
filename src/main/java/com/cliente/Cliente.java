@@ -35,6 +35,7 @@ public class Cliente {
                 case "login":
                     if (UserInterfaceLogin.isAdmin(getToken())) {
                         userInterfaceLogin.mudarTela("cadastro");
+                        userInterfaceMain.show();
                     } else {
                         userInterfaceLogin.mudarTela("listar");
                         userInterfaceLogin.listarUsuariosButton.doClick();
@@ -81,6 +82,42 @@ public class Cliente {
                     JOptionPane.showMessageDialog(null, "Usuário excluído com sucesso!");
                     break;
 
+                case "cadastro-ponto":
+                    JOptionPane.showMessageDialog(null, "Ponto cadastrado com sucesso!");
+                    break;
+
+                case "listar-pontos":
+                    break;
+
+                case "edicao-ponto":
+                    JOptionPane.showMessageDialog(null, "Ponto editado com sucesso!");
+                    break;
+
+                case "pedido-edicao-ponto":
+                    break;
+
+                case "excluir-ponto":
+                    JOptionPane.showMessageDialog(null, "Ponto excluído com sucesso!");
+                    break;
+
+                case "cadastro-segmento":
+                    JOptionPane.showMessageDialog(null, "Segmento cadastrado com sucesso!");
+                    break;
+
+                case "listar-segmentos":
+                    break;
+
+                case "edicao-segmento":
+                    JOptionPane.showMessageDialog(null, "Segmento editado com sucesso!");
+                    break;
+
+                case "pedido-edicao-segmento":
+                    break;
+
+                case "excluir-segmento":
+                    JOptionPane.showMessageDialog(null, "Segmento excluído com sucesso!");
+                    break;
+
                 default:
                     JOptionPane.showMessageDialog(null, "Ação não reconhecida");
                     break;
@@ -90,6 +127,17 @@ public class Cliente {
 
     public void updateUsersList(JsonNode usuarios) {
         userInterfaceLogin.updateUsersList((ArrayNode) usuarios);
+    }
+
+    public void updatePontosList(JsonNode pontos) {
+        userInterfaceMain.updatePontosList((ArrayNode) pontos);
+    }
+    public void updateSegmentosList(JsonNode segmentos) {
+        userInterfaceMain.updateSegmentosList((ArrayNode) segmentos);
+    }
+
+    public void updatePonto(JsonNode ponto) {
+        userInterfaceMain.updatePonto(ponto);
     }
 
     public String getServerIP() {

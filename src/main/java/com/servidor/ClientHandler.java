@@ -14,6 +14,7 @@ import java.io.*;
 import java.net.Socket;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -59,8 +60,8 @@ public class ClientHandler implements Runnable {
     private void processRequest(String inputLine, PrintWriter writer) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(inputLine);
-        System.out.println("Servidor: Recebido -> " + jsonNode.toString());
         String action = jsonNode.get("action").asText();
+        System.out.println("Servidor: Recebido -> " + jsonNode.toString());
 
         try {
             if (jsonNode.has("action")) {
@@ -70,6 +71,7 @@ public class ClientHandler implements Runnable {
                 String message = "";
 
                 switch (action) {
+// ------------------------------------------------------------------------------ LOGIN ------------------------------------------------------------------------------------------------------------------ //
                     case "login":
                         String password = data.get("password").asText();
                         String loginEmail = data.get("email").asText();
@@ -99,6 +101,8 @@ public class ClientHandler implements Runnable {
                             message = "Usuário não está logado.";
                         }
                         break;
+
+// ------------------------------------------------------------------------------ USUÁRIO ------------------------------------------------------------------------------------------------------------------ //
 
                     case "cadastro-usuario":
                     case "autocadastro-usuario":
@@ -235,6 +239,7 @@ public class ClientHandler implements Runnable {
                         }
                         break;
 
+// ------------------------------------------------------------------------------ PONTOS ------------------------------------------------------------------------------------------------------------------ //
                     case "cadastro-ponto":
                         String tokenCadastrarPonto = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
 
@@ -258,12 +263,12 @@ public class ClientHandler implements Runnable {
                         String tokenPedidoEdicaoPonto = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
 
                         if (!Objects.equals(tokenPedidoEdicaoPonto, "") && isValidUser(tokenPedidoEdicaoPonto) && isAdmin(tokenPedidoEdicaoPonto)) {
-                            String pedidoEdicaoPontoId = data.get("id").asText();
+                            Integer pedidoEdicaoPontoId = data.get("ponto_id").asInt();
 
                             Pontos ponto = dbManager.encontrarPontoPorId(pedidoEdicaoPontoId);
                             if (ponto != null) {
                                 responseData = mapper.createObjectNode();
-                                ArrayNode usersArray = responseData.putArray("user");
+                                ArrayNode usersArray = responseData.putArray("ponto");
 
                                 ObjectNode pontoNode = mapper.createObjectNode();
                                 pontoNode.put("id", ponto.getId());
@@ -274,6 +279,26 @@ public class ClientHandler implements Runnable {
                                 message = "Sucesso";
                             } else {
                                 message = "Nenhum ponto encontrado.";
+                            }
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
+                    case "edicao-ponto":
+                        String tokenEditarPonto = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+                        String edicaoPontoNome = data.get("name").asText();
+                        String edicaoPontoObs = data.get("obs").asText();
+                        int edicaoPontoId = data.get("ponto_id").asInt();
+
+                        if (!Objects.equals(tokenEditarPonto, "") && isValidUser(tokenEditarPonto)) {
+                            boolean result = dbManager.editarPonto(edicaoPontoId, edicaoPontoNome, edicaoPontoObs);
+
+                            if (result) {
+                                error = false;
+                                message = "Ponto editado com sucesso";
+                            } else {
+                                message = "Nenhum usuário encontrado.";
                             }
                         } else {
                             message = "Usuário não está logado ou token inválido.";
@@ -315,33 +340,37 @@ public class ClientHandler implements Runnable {
 
                             pontoId = data.get("ponto_id").asInt();
 
+                            dbManager.excluirSegmentosPorPonto(pontoId);
+
                             boolean result = dbManager.excluirPonto(pontoId);
                             if(result) {
                                 error = false;
-                                message = "Usuario excluido com sucesso";
+                                message = "Ponto excluido com sucesso";
                             } else {
-                                message = "Nenhum usuário encontrado.";
+                                message = "Nenhum ponto encontrado.";
                             }
                         } else {
                             message = "Usuário não está logado ou token inválido.";
                         }
                         break;
 
+// ------------------------------------------------------------------------------ SEGMENTOS ------------------------------------------------------------------------------------------------------------------ //
+
                     case "cadastro-segmento":
                         String tokenCadastrarSegmento = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
 
                         if (!Objects.equals(tokenCadastrarSegmento, "") && isValidUser(tokenCadastrarSegmento) && isAdmin(tokenCadastrarSegmento)) {
-                            String pontoOrigemId = data.get("ponto_origem").asText();
-                            String pontoDestinoId = data.get("ponto_Destino").asText();
+                            Integer pontoOrigemId = data.get("ponto_origem").get("id").asInt();
+                            Integer pontoDestinoId = data.get("ponto_destino").get("id").asInt();
                             String direcao = data.get("direcao").asText();
-                            String distancia = data.get("distancia").asText();
+                            Integer distancia = data.get("distancia").asInt();
                             String obs = data.get("obs").asText();
 
                             Pontos pontoOrigem = dbManager.encontrarPontoPorId(pontoOrigemId);
                             Pontos pontoDestino = dbManager.encontrarPontoPorId(pontoDestinoId);
 
                             if (pontoOrigem != null || pontoDestino != null) {
-                                boolean result = dbManager.inserirSegmento(pontoOrigem, pontoDestino, direcao, distancia, obs);
+                                boolean result = dbManager.inserirSegmento(pontoOrigemId, pontoDestinoId, direcao, distancia, obs);
                                 if(result) {
                                     error = false;
                                     message = "Segmento cadastrado com sucesso";
@@ -357,32 +386,66 @@ public class ClientHandler implements Runnable {
                         }
                         break;
 
+                    case "edicao-segmento":
+                        String tokenEditarSegmento = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
+
+                        if (!Objects.equals(tokenEditarSegmento, "") && isValidUser(tokenEditarSegmento) && isAdmin(tokenEditarSegmento)) {
+                            Integer pontoOrigemIdEdicao = data.get("ponto_origem").get("id").asInt();
+                            Integer pontoDestinoIdEdicao = data.get("ponto_destino").get("id").asInt();
+                            String direcaoEdicao = data.get("direcao").asText();
+                            Integer distanciaEdicao = data.get("distancia").asInt();
+                            String obsEdicao = data.get("obs").asText();
+                            Integer segmentoEdicaoId = data.get("segmento_id").asInt();
+
+                            Pontos pontoOrigem = dbManager.encontrarPontoPorId(pontoOrigemIdEdicao);
+                            Pontos pontoDestino = dbManager.encontrarPontoPorId(pontoDestinoIdEdicao);
+
+                            if (pontoOrigem != null || pontoDestino != null) {
+                                boolean result = dbManager.editarSegmento(segmentoEdicaoId, pontoOrigemIdEdicao, pontoDestinoIdEdicao, direcaoEdicao, distanciaEdicao, obsEdicao);
+                                if(result) {
+                                    error = false;
+                                    message = "Segmento editado com sucesso";
+                                } else {
+                                    message = "Erro ao editar segmento.";
+                                }
+                            } else {
+                                message = "Pontos nao encontrados.";
+                            }
+
+                        } else {
+                            message = "Usuário não está logado ou token inválido.";
+                        }
+                        break;
+
                     case "pedido-edicao-segmento":
                         String tokenPedidoEdicaoSegmento = (data.has("token") && !data.get("token").isNull()) ? data.get("token").asText() : "";
 
                         if (!Objects.equals(tokenPedidoEdicaoSegmento, "") && isValidUser(tokenPedidoEdicaoSegmento) && isAdmin(tokenPedidoEdicaoSegmento)) {
-                            String pedidoEdicaoSegmentoId = data.get("id").asText();
+                            String pedidoEdicaoSegmentoId = data.get("segmento_id").asText();
 
                             Segmentos segmento = dbManager.encontrarSegmentoPorId(pedidoEdicaoSegmentoId);
                             if (segmento != null) {
                                 responseData = mapper.createObjectNode();
-                                ArrayNode segmentosArray = responseData.putArray("user");
-                                Pontos pontoOrigem = segmento.getPonto_origem();
-                                Pontos pontoDestino = segmento.getPonto_destino();
+                                ArrayNode segmentosArray = responseData.putArray("segmento");
+                                Integer pontoOrigem = segmento.getPonto_origem();
+                                Integer pontoDestino = segmento.getPonto_destino();
 
                                 ObjectMapper segmentoMapper = new ObjectMapper();
-                                ObjectNode segmentoNode = mapper.createObjectNode();
+                                ObjectNode segmentoNode = segmentoMapper.createObjectNode();
                                 segmentoNode.put("id", segmento.getId());
 
+                                Pontos pontoOrigemPedido = dbManager.encontrarPontoPorId(pontoOrigem);
+                                Pontos pontoDestinoPedido = dbManager.encontrarPontoPorId(pontoDestino);
+
                                 ObjectNode ponto_origem = segmentoNode.putObject("ponto_origem");
-                                ponto_origem.put("id", pontoOrigem.getId());
-                                ponto_origem.put("name", pontoOrigem.getNome());
-                                ponto_origem.put("obs", pontoOrigem.getObs());
+                                ponto_origem.put("id", pontoOrigemPedido.getId());
+                                ponto_origem.put("name", pontoOrigemPedido.getNome());
+                                ponto_origem.put("obs", pontoOrigemPedido.getObs());
 
                                 ObjectNode ponto_destino = segmentoNode.putObject("ponto_destino");
-                                ponto_destino.put("id", pontoDestino.getId());
-                                ponto_destino.put("name", pontoDestino.getNome());
-                                ponto_destino.put("obs", pontoDestino.getObs());
+                                ponto_destino.put("id", pontoDestinoPedido.getId());
+                                ponto_destino.put("name", pontoDestinoPedido.getNome());
+                                ponto_destino.put("obs", pontoDestinoPedido.getObs());
 
                                 segmentoNode.put("direcao", segmento.getDirecao());
                                 segmentoNode.put("distancia", segmento.getDistancia());
@@ -404,17 +467,19 @@ public class ClientHandler implements Runnable {
 
                         if (!Objects.equals(tokenListarSegmento, "") && isValidUser(tokenListarSegmento) && isAdmin(tokenListarSegmento)) {
                             List<Segmentos> segmentos = dbManager.listarSegmentos();
-
+                            ObjectMapper mapperSegmentos = new ObjectMapper();
+                            responseData = mapper.createObjectNode();
+                            ArrayNode segmentosArray =  responseData.putArray("segmentos");
                             if (!segmentos.isEmpty()) {
-                                responseData = mapper.createObjectNode();
-                                ArrayNode segmentosArray = responseData.putArray("segmentos");
-
                                 for (Segmentos segmento : segmentos) {
-                                    Pontos pontoOrigem = segmento.getPonto_origem();
-                                    Pontos pontoDestino = segmento.getPonto_destino();
-
-                                    ObjectNode segmentoNode = mapper.createObjectNode();
+                                    ObjectNode segmentoNode = mapperSegmentos.createObjectNode();
                                     segmentoNode.put("id", segmento.getId());
+                                    segmentoNode.put("direcao", segmento.getDirecao());
+                                    segmentoNode.put("distancia", segmento.getDistancia());
+                                    segmentoNode.put("obs", segmento.getObs());
+
+                                    Pontos pontoOrigem = dbManager.encontrarPontoPorId(segmento.getPonto_origem());
+                                    Pontos pontoDestino = dbManager.encontrarPontoPorId(segmento.getPonto_destino());
 
                                     ObjectNode ponto_origem = segmentoNode.putObject("ponto_origem");
                                     ponto_origem.put("id", pontoOrigem.getId());
@@ -426,12 +491,9 @@ public class ClientHandler implements Runnable {
                                     ponto_destino.put("name", pontoDestino.getNome());
                                     ponto_destino.put("obs", pontoDestino.getObs());
 
-                                    segmentoNode.put("direcao", segmento.getDirecao());
-                                    segmentoNode.put("distancia", segmento.getDistancia());
-                                    segmentoNode.put("obs", segmento.getObs());
-                                    segmentoNode.put("obs", segmento.getObs());
                                     segmentosArray.add(segmentoNode);
                                 }
+
                                 error = false;
                                 message = "Sucesso";
                             } else {
@@ -469,8 +531,8 @@ public class ClientHandler implements Runnable {
 
                 sendResponse(writer, error, message, action, responseData);
             }
-        } catch (SQLException e) {
-            sendResponse(writer, true, "Erro durante o processamento na base de dados", action, null);
+        } catch (Exception e) {
+            sendResponse(writer, true, "Ocorreu um erro ao ler os dados JSON.", action, null);
             e.printStackTrace();
         }
     }
